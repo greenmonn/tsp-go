@@ -25,7 +25,7 @@ func main() {
 
 	startTime := time.Now()
 
-	GAFromRandomPopulation()
+	greedy()
 
 	duration := time.Now().Sub(startTime)
 
@@ -38,7 +38,7 @@ func GAFromRandomPopulation() {
 	fmt.Println("Distance: ", tour.Distance)
 
 	for i := 0; i < optimizationCount; i++ {
-		operator.Optimize(tour)
+		operator.LocalSearchOptimize(tour)
 	}
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
@@ -58,7 +58,7 @@ func greedy() {
 
 	fmt.Println("Distance: ", tour.Distance)
 
-	operator.Optimize(tour)
+	tour = operator.LocalSearchOptimize(tour)
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
 

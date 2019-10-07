@@ -1,7 +1,7 @@
 # Result
 
 ## Greedy(Muli-fragment heuristic) Algorithm + 2-Optimization (Edge Exchange)
-    * 979,171.09
+    * 978,445.6203377396
 
 ## GA + Optimization
     * 50 Population / 100 Generations => 

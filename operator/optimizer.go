@@ -1,21 +1,76 @@
 package operator
 
-import "github.com/greenmonn/tsp-go/graph"
+import (
+	"fmt"
+
+	"github.com/greenmonn/tsp-go/graph"
+)
 
 func Optimize(tour *graph.Tour) {
 	// 2-opt pairwise exchange
-	tour.UpdateDistance()
+	tour.UpdateConnections()
 
 	N := graph.GetNodesCount()
 
 	for i := 0; i < N; i++ {
-		for j := i + 3; j < i+N-1; j++ {
-			SwapTwoEdges(tour, i, j, true)
+		for j := i + 2; j < i+N-1; j++ {
+			changed := SwapTwoEdges(tour, i, j, true)
+
+			// Update path from connections
+			if changed {
+				tour.FromNodes(tour.Path)
+			}
 		}
 	}
 }
 
-func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) {
+func LocalSearchOptimize(tour *graph.Tour) *graph.Tour {
+	// Search neighbors until no better neighbors exist
+	tour.UpdateConnections()
+
+	iteration := 0
+
+	for {
+		neighbor, found := find2OptFirstBetterNeighbor(tour)
+
+		iteration++
+
+		if !found {
+			fmt.Println("Iteration count: ", iteration)
+			return tour
+		}
+
+		tour = neighbor
+	}
+}
+
+func find2OptFirstBetterNeighbor(tour *graph.Tour) (neighbor *graph.Tour, found bool) {
+	N := graph.GetNodesCount()
+
+	neighbor = graph.NewTour()
+	neighbor.FromPath(tour.Path)
+
+	found = false
+
+	for i := 0; i < N; i++ {
+		for j := i + 2; j < i+N-1; j++ {
+			found = SwapTwoEdges(neighbor, i, j, true)
+
+			if found {
+				neighbor.FromNodes(neighbor.Path)
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func findLKOptFirstBetterNeighbor(tour *graph.Tour) (neighbor *graph.Tour, found bool) {
+	return
+}
+
+func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) bool {
 	D := graph.GetDistance
 
 	a := tour.GetNode(i)
@@ -25,7 +80,7 @@ func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) {
 	d := tour.GetNode(j + 1)
 
 	if onlyIfBetter && D(a, b)+D(c, d) <= D(a, c)+D(b, d) {
-		return
+		return false
 	}
 
 	replace := func(node *graph.Node, from *graph.Node, to *graph.Node) {
@@ -42,5 +97,5 @@ func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) {
 	replace(c, d, a)
 	replace(d, c, b)
 
-	tour.FromNodes(tour.Path)
+	return true
 }

@@ -92,13 +92,15 @@ func (t *Tour) UpdateDistance() {
 		node = nextNode
 	}
 
+	t.Distance += GetDistance(t.Path[len(t.Path)-1], t.Path[0])
+}
+
+func (t *Tour) UpdateConnections() {
 	// Update each node's connection information
 	for i := 0; i < GetNodesCount(); i++ {
 		t.Path[i].Connected =
 			[]*Node{t.GetNode(i - 1), t.GetNode(i + 1)}
 	}
-
-	t.Distance += GetDistance(t.Path[len(t.Path)-1], t.Path[0])
 }
 
 func (t *Tour) GetNode(index int) *Node {
