@@ -24,40 +24,35 @@ func Optimize(tour *graph.Tour) {
 	}
 }
 
-func LocalSearchOptimize(tour *graph.Tour) *graph.Tour {
+func LocalSearchOptimize(tour *graph.Tour) {
 	// Search neighbors until no better neighbors exist
 	tour.UpdateConnections()
 
 	iteration := 0
 
 	for {
-		neighbor, found := find2OptFirstBetterNeighbor(tour)
+		found := find2OptFirstBetterNeighbor(tour)
 
 		iteration++
 
 		if !found {
 			fmt.Println("Iteration count: ", iteration)
-			return tour
+			return
 		}
-
-		tour = neighbor
 	}
 }
 
-func find2OptFirstBetterNeighbor(tour *graph.Tour) (neighbor *graph.Tour, found bool) {
+func find2OptFirstBetterNeighbor(tour *graph.Tour) (found bool) {
 	N := graph.GetNodesCount()
-
-	neighbor = graph.NewTour()
-	neighbor.FromPath(tour.Path)
 
 	found = false
 
 	for i := 0; i < N; i++ {
 		for j := i + 2; j < i+N-1; j++ {
-			found = SwapTwoEdges(neighbor, i, j, true)
+			found = SwapTwoEdges(tour, i, j, true)
 
 			if found {
-				neighbor.FromNodes(neighbor.Path)
+				tour.FromNodes(tour.Path)
 				return
 			}
 		}

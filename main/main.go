@@ -58,7 +58,7 @@ func greedy() {
 
 	fmt.Println("Distance: ", tour.Distance)
 
-	tour = operator.LocalSearchOptimize(tour)
+	operator.LocalSearchOptimize(tour)
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
 
