@@ -4,6 +4,7 @@ import "github.com/greenmonn/tsp-go/graph"
 
 func Optimize(tour *graph.Tour) {
 	// 2-opt pairwise exchange
+	tour.UpdateDistance()
 
 	N := graph.GetNodesCount()
 
@@ -41,7 +42,5 @@ func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) {
 	replace(c, d, a)
 	replace(d, c, b)
 
-	connectedNodes := make([]*graph.Node, graph.GetNodesCount())
-	copy(connectedNodes, tour.Path)
-	tour.FromNodes(connectedNodes)
+	tour.FromNodes(tour.Path)
 }
