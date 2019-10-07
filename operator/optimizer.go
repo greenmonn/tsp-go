@@ -31,18 +31,22 @@ func LocalSearchOptimize(tour *graph.Tour) {
 	iteration := 0
 
 	for {
-		found := find2OptFirstBetterNeighbor(tour)
+		found := find2OptBetterMove(tour)
 
 		iteration++
+		if iteration%10 == 0 {
+			fmt.Println("\nIteration count: ", iteration)
+			fmt.Println(tour.Distance)
+		}
 
 		if !found {
-			fmt.Println("Iteration count: ", iteration)
+			fmt.Println("\nIteration count: ", iteration)
 			return
 		}
 	}
 }
 
-func find2OptFirstBetterNeighbor(tour *graph.Tour) (found bool) {
+func find2OptBetterMove(tour *graph.Tour) (found bool) {
 	N := graph.GetNodesCount()
 
 	found = false
