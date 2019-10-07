@@ -1,28 +1,45 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"time"
 
 	"github.com/greenmonn/tsp-go/graph"
 	"github.com/greenmonn/tsp-go/operator"
 	"github.com/greenmonn/tsp-go/solver"
 )
 
+var (
+	populationNumber  int
+	generations       int
+	optimizationCount int
+
+	filename string
+)
+
 func main() {
-	filename := "rl11849"
+	parseArguments()
+
 	graph.SetGraphFromFile("problems/" + filename + ".tsp")
 
-	GAFromRandomPopulation(filename)
+	startTime := time.Now()
+
+	GAFromRandomPopulation()
+
+	duration := time.Now().Sub(startTime)
+
+	fmt.Println("Duration: ", duration)
 }
 
-func GAFromRandomPopulation(filename string) {
-	tour := solver.SolveGA([]*graph.Tour{}, 50)
+func GAFromRandomPopulation() {
+	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
 
 	fmt.Println("Distance: ", tour.Distance)
-	fmt.Println("Path: ", graph.PathToIDs(tour.Path))
 
-	tour.FromPath(tour.Path)
-	operator.Optimize(tour)
+	for i := 0; i < optimizationCount; i++ {
+		operator.Optimize(tour)
+	}
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
 
@@ -31,7 +48,12 @@ func GAFromRandomPopulation(filename string) {
 	fmt.Printf("%d Bytes Wrote\n", n)
 }
 
-func greedy(filename string) {
+// func GAWithGreedyPopulation() {
+// 	greedyTour := solver.SolveGreedy()
+
+// }
+
+func greedy() {
 	tour := solver.SolveGreedy()
 
 	fmt.Println("Distance: ", tour.Distance)
@@ -43,4 +65,18 @@ func greedy(filename string) {
 	n := tour.WritePathToFile(filename)
 
 	fmt.Printf("%d Bytes Wrote\n", n)
+}
+
+func parseArguments() {
+	filenamePtr := flag.String("filename", "rl11849", "filename of a TSP instance from TSPLIB symmetric euc2d problems set")
+
+	populationNumberPtr := flag.Int("p", 50, "population number")
+	generationsPtr := flag.Int("f", 100, "generations for fitness evaluations")
+	optimizationCountPtr := flag.Int("o", 2, "count of iterative optimizations for final solution")
+
+	flag.Parse()
+	filename = *filenamePtr
+	populationNumber = *populationNumberPtr
+	generations = *generationsPtr
+	optimizationCount = *optimizationCountPtr
 }

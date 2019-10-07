@@ -10,13 +10,12 @@ import (
 )
 
 const (
-	fitnessEvaluation = 100
-	tournamentSize    = 6
-	mutationRate      = 0.01
-	elitism           = true
+	tournamentSize = 6
+	mutationRate   = 0.01
+	elitism        = true
 )
 
-func SolveGA(initialTours []*graph.Tour, populationNumber int) *graph.Tour {
+func SolveGA(initialTours []*graph.Tour, populationNumber int, generations int) *graph.Tour {
 	N := populationNumber
 	var population *Population
 
@@ -26,17 +25,13 @@ func SolveGA(initialTours []*graph.Tour, populationNumber int) *graph.Tour {
 		population = NewPopulation(N, initialTours)
 	}
 
-	for i := 0; i < fitnessEvaluation; i++ {
+	for i := 0; i < generations; i++ {
 		fmt.Printf("\n%dth Generation\n", i+1)
 
 		population = EvolvePopulation(population)
 	}
 
-	bestTour := population.bestTour()
-	bestTour.FromPath(bestTour.Path)
-	operator.Optimize(bestTour)
-
-	return bestTour
+	return population.bestTour()
 }
 
 func EvolvePopulation(p *Population) *Population {

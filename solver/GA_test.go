@@ -80,7 +80,7 @@ var _ = Describe("GA", func() {
 
 					initialTours[i] = tour
 				}
-				optimizedTour := SolveGA(initialTours, 10)
+				optimizedTour := SolveGA(initialTours, 10, 10)
 
 				Expect(len(optimizedTour.Path)).To(Equal(N))
 
@@ -95,7 +95,7 @@ var _ = Describe("GA", func() {
 
 		Context("with empty list", func() {
 			It("returns optimized tour from a random population", func() {
-				optimizedTour := SolveGA([]*graph.Tour{}, 10)
+				optimizedTour := SolveGA([]*graph.Tour{}, 10, 10)
 
 				Expect(len(optimizedTour.Path)).To(Equal(N))
 
