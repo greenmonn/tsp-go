@@ -25,7 +25,7 @@ func NewRandomPopulation(N int) *Population {
 	return &Population{Tours: tours, N: N}
 }
 
-func (p *Population) bestTour() *graph.Tour {
+func (p *Population) BestTour() *graph.Tour {
 	minDistance := math.MaxFloat64
 	var currentBest *graph.Tour
 

@@ -7,19 +7,14 @@ import (
 )
 
 func Optimize(tour *graph.Tour) {
-	// 2-opt pairwise exchange
+	// 2-opt pairwise exchange (iterate over one path)
 	tour.UpdateConnections()
 
 	N := graph.GetNodesCount()
 
 	for i := 0; i < N; i++ {
 		for j := i + 2; j < i+N-1; j++ {
-			changed := SwapTwoEdges(tour, i, j, true)
-
-			// Update path from connections
-			if changed {
-				tour.FromNodes(tour.Path)
-			}
+			SwapTwoEdges(tour, i, j, true)
 		}
 	}
 }
@@ -31,16 +26,18 @@ func LocalSearchOptimize(tour *graph.Tour) {
 	iteration := 0
 
 	for {
-		found := find2OptBetterMove(tour)
+		found := find2OptBetterMoveFromConnections(tour)
 
 		iteration++
 		if iteration%10 == 0 {
 			fmt.Println("\nIteration count: ", iteration)
-			fmt.Println(tour.Distance)
+			tour.FromNodes(tour.Path)
+			fmt.Println("Distance: ", tour.Distance)
 		}
 
 		if !found {
-			fmt.Println("\nIteration count: ", iteration)
+			fmt.Println("\nFINISH - Iteration count: ", iteration)
+			tour.FromNodes(tour.Path)
 			return
 		}
 	}
@@ -56,7 +53,6 @@ func find2OptBetterMove(tour *graph.Tour) (found bool) {
 			found = SwapTwoEdges(tour, i, j, true)
 
 			if found {
-				tour.FromNodes(tour.Path)
 				return
 			}
 		}
@@ -65,8 +61,77 @@ func find2OptBetterMove(tour *graph.Tour) (found bool) {
 	return
 }
 
-func findLKOptFirstBetterNeighbor(tour *graph.Tour) (neighbor *graph.Tour, found bool) {
+func find2OptBetterMoveFromConnections(tour *graph.Tour) (found bool) {
+	// Does not need path restoration
+	N := graph.GetNodesCount()
+
+	found = false
+
+	for i := 0; i < N; i++ {
+		edge1To := tour.GetNode(i)
+		edge1From := edge1To.Connected[0]
+
+		// A node not in edge 1
+		prev := edge1To
+		node := edge1To.Connected[1]
+
+		for {
+			edge2From := node
+			var edge2To *graph.Node
+			for _, next := range edge2From.Connected {
+				if next.ID == prev.ID {
+					continue
+				}
+
+				edge2To = next
+				break
+			}
+
+			if edge2To.ID == edge1From.ID {
+				break
+			}
+
+			found = SwapTwoEdgesByNodes(tour, edge1From, edge1To, edge2From, edge2To, true)
+
+			if found {
+				return
+			}
+
+			prev = edge2From
+			node = edge2To
+		}
+	}
+
 	return
+}
+
+func findLKOptBetterMove(tour *graph.Tour) (found bool) {
+	// TODO
+	return
+}
+
+func SwapTwoEdgesByNodes(tour *graph.Tour, a *graph.Node, b *graph.Node, c *graph.Node, d *graph.Node, onlyIfBetter bool) bool {
+	D := graph.GetDistance
+
+	if onlyIfBetter && D(a, b)+D(c, d) <= D(a, c)+D(b, d) {
+		return false
+	}
+
+	replace := func(node *graph.Node, from *graph.Node, to *graph.Node) {
+		for i, n := range node.Connected {
+			if n.ID != from.ID {
+				continue
+			}
+			node.Connected[i] = to
+		}
+	}
+
+	replace(a, b, c)
+	replace(b, a, d)
+	replace(c, d, a)
+	replace(d, c, b)
+
+	return true
 }
 
 func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) bool {
@@ -95,6 +160,8 @@ func SwapTwoEdges(tour *graph.Tour, i int, j int, onlyIfBetter bool) bool {
 	replace(b, a, d)
 	replace(c, d, a)
 	replace(d, c, b)
+
+	tour.FromNodes(tour.Path)
 
 	return true
 }

@@ -64,6 +64,11 @@ func OrderCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tou
 	return
 }
 
+func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, child2 *graph.Tour) {
+	
+	return
+}
+
 func NoCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, child2 *graph.Tour) {
 	child1 = parent1
 	child2 = parent2

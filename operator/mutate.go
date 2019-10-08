@@ -23,3 +23,21 @@ func SwapPositionMutate(t *graph.Tour, mutationRate float64) {
 
 	t.UpdateDistance()
 }
+
+func EdgeExchangeMutate(t *graph.Tour, mutationRate float64) {
+	N := graph.GetNodesCount()
+
+	t.UpdateConnections()
+
+	for i := 0; i < N; i++ {
+		if rand.Float64() >= mutationRate {
+			continue
+		}
+
+		gap := rand.Intn(N - 3)
+
+		SwapTwoEdges(t, i, i+2+gap, false)
+	}
+
+	t.UpdateDistance()
+}

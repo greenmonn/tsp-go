@@ -16,6 +16,12 @@ const (
 )
 
 func SolveGA(initialTours []*graph.Tour, populationNumber int, generations int) *graph.Tour {
+	population := GAOptimize(initialTours, populationNumber, generations)
+
+	return population.BestTour()
+}
+
+func GAOptimize(initialTours []*graph.Tour, populationNumber int, generations int) *Population {
 	N := populationNumber
 	var population *Population
 
@@ -31,7 +37,7 @@ func SolveGA(initialTours []*graph.Tour, populationNumber int, generations int) 
 		population = EvolvePopulation(population)
 	}
 
-	return population.bestTour()
+	return population
 }
 
 func EvolvePopulation(p *Population) *Population {
@@ -40,7 +46,7 @@ func EvolvePopulation(p *Population) *Population {
 	offset := 0
 
 	if elitism {
-		elite := p.bestTour()
+		elite := p.BestTour()
 
 		fmt.Println("Current Best Distance: ", elite.Distance)
 
@@ -109,7 +115,7 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 		}
 
 		tournament = NewPopulation(tournamentSize, candidates)
-		parents[i] = tournament.bestTour()
+		parents[i] = tournament.BestTour()
 	}
 
 	parent1 = parents[0]
@@ -123,5 +129,5 @@ func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, ch
 }
 
 func mutate(t *graph.Tour) {
-	operator.SwapPositionMutate(t, mutationRate)
+	operator.EdgeExchangeMutate(t, mutationRate)
 }

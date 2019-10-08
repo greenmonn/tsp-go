@@ -39,7 +39,7 @@ var _ = Describe("GA", func() {
 			}
 			population := NewPopulation(10, initialTours)
 
-			Expect(population.bestTour().Distance).To(Equal(initialTours[0].Distance))
+			Expect(population.BestTour().Distance).To(Equal(initialTours[0].Distance))
 		})
 	})
 
@@ -61,7 +61,7 @@ var _ = Describe("GA", func() {
 
 			Expect(len(population.Tours)).To(Equal(len(nextPopulation.Tours)))
 
-			Expect(population.bestTour().Distance >= nextPopulation.bestTour().Distance)
+			Expect(population.BestTour().Distance >= nextPopulationBbestTour().Distance)
 		})
 	})
 

@@ -38,12 +38,39 @@ func GAFromRandomPopulation() {
 	fmt.Println("Distance: ", tour.Distance)
 
 	for i := 0; i < optimizationCount; i++ {
-		operator.LocalSearchOptimize(tour)
+		operator.Optimize(tour)
 	}
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
 
 	n := tour.WritePathToFile(filename)
+
+	fmt.Printf("%d Bytes Wrote\n", n)
+}
+
+func LocalSearchFromRandomTour() {
+	tour := graph.NewRandomTour()
+
+	operator.LocalSearchOptimize(tour)
+
+	fmt.Println("Distance: ", tour.Distance)
+
+}
+
+func GAOptimizeFinalPopulation() {
+	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
+
+	fmt.Println("Best Distance: ", population.BestTour().Distance)
+
+	for _, tour := range population.Tours {
+		operator.Optimize(tour)
+	}
+
+	best := population.BestTour()
+
+	fmt.Println("Best Distance after Optimization: ", best.Distance)
+
+	n := best.WritePathToFile(filename)
 
 	fmt.Printf("%d Bytes Wrote\n", n)
 }
