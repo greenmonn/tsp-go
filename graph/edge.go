@@ -16,5 +16,10 @@ func NewEdge(from *Node, to *Node) *Edge {
 }
 
 func (e *Edge) Hash() string {
-	return strconv.Itoa(e.From.ID) + strconv.Itoa(e.To.ID)
+	x := e.From.ID
+	y := e.To.ID
+	if e.From.ID > e.To.ID {
+		x, y = y, x
+	}
+	return strconv.Itoa(x) + "#" + strconv.Itoa(y)
 }

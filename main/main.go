@@ -25,7 +25,7 @@ func main() {
 
 	startTime := time.Now()
 
-	MAWithGreedyPopulation()
+	GAFromRandomPopulation()
 
 	duration := time.Now().Sub(startTime)
 

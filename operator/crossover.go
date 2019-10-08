@@ -1,7 +1,6 @@
 package operator
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 
@@ -66,24 +65,39 @@ func OrderCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
 	return []*graph.Tour{child1, child2}
 }
 
+func selectRandomParents(parents []*graph.Tour) *graph.Tour {
+	unit := float64(1.0 / len(parents))
+	probability := unit
+
+	r := rand.Float64()
+
+	for _, p := range parents {
+		if r < probability {
+			return p
+		}
+
+		probability += unit
+	}
+
+	return parents[len(parents)-1]
+}
+
 func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	parent1.UpdateConnections()
-	parent2.UpdateConnections()
 
 	N := graph.GetNodesCount()
 
-	K := make([]*graph.Node, N)
+	childPath := make([]*graph.Node, N)
 
-	node := parent1.GetNode(0)
+	parent1.UpdateConnections()
+	parent2.UpdateConnections()
 
-	if rand.Float64() < 0.5 {
-		node = parent2.GetNode(0)
-	}
+	node := selectRandomParents([]*graph.Tour{parent1, parent2}).GetNode(0)
 
 	index := 0
+	connectionsUnion := make(map[int][]*graph.Node)
+
 	usedNodes := make(map[int]bool)
 	unUsedNodes := make(map[int]*graph.Node)
-	connectionsUnion := make(map[int][]*graph.Node)
 
 	for i := 0; i < N; i++ {
 		n := parent1.GetNode(i)
@@ -91,28 +105,30 @@ func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child
 		unUsedNodes[n.ID] = n
 		connectionsUnion[n.ID] = make([]*graph.Node, 2)
 		copy(connectionsUnion[n.ID], n.Connected)
+
 	}
 
 	for i := 0; i < N; i++ {
 		n := parent2.GetNode(i)
 		connections := connectionsUnion[n.ID]
+
 		newConnections := make([]*graph.Node, 0, 4)
 
-		for _, n2 := range n.Connected {
-			for _, n1 := range connections {
-				if n2.ID == n1.ID {
-					n2.ID = -n2.ID
-				} else {
-					newConnections = append(newConnections, n1)
-				}
-				newConnections = append(newConnections, n2)
-			}
+		if n.Connected[0].ID != connections[0].ID && n.Connected[1].ID != connections[0].ID {
+			newConnections = append(newConnections, connections[0])
 		}
+
+		if n.Connected[0].ID != connections[1].ID && n.Connected[1].ID != connections[1].ID {
+			newConnections = append(newConnections, connections[1])
+		}
+
+		newConnections = append(newConnections, n.Connected...)
+
 		connectionsUnion[n.ID] = newConnections
 	}
 
 	for {
-		K[index] = node
+		childPath[index] = node
 		index++
 
 		if index == N {
@@ -145,7 +161,7 @@ func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child
 	}
 
 	child := graph.NewTour()
-	child.FromPath(K)
+	child.FromPath(childPath)
 
 	return []*graph.Tour{child}
 }
@@ -166,7 +182,5 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, 
 }
 
 func NoCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
-	fmt.Println(graph.PathToIDs(parent1.Path))
-	fmt.Println(graph.PathToIDs(parent2.Path))
 	return []*graph.Tour{parent1, parent2}
 }

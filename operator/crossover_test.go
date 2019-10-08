@@ -47,10 +47,14 @@ var _ = Describe("Crossover", func() {
 			p1 := graph.NewRandomTour()
 			p2 := graph.NewRandomTour()
 
+			fmt.Println("Parent 1 Distance: ", p1.Distance)
+			fmt.Println("Parent 2 Distance: ", p2.Distance)
+
 			children := EdgeRecombinationCrossover(p1, p2)
 
 			for _, c := range children {
 				Expect(len(c.Path)).To(Equal(N))
+				fmt.Println("Distance: ", c.Distance)
 			}
 
 		})
