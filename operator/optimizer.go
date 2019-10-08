@@ -70,10 +70,13 @@ func find2OptBetterMoveFromConnections(tour *graph.Tour) (found bool) {
 	for i := 0; i < N; i++ {
 		edge1To := tour.GetNode(i)
 		edge1From := edge1To.Connected[0]
+		edge1 := graph.NewEdge(edge1From, edge1To)
 
-		// A node not in edge 1
 		prev := edge1To
 		node := edge1To.Connected[1]
+
+		usedEdges := make(map[string]bool)
+		usedEdges[edge1.Hash()] = true
 
 		for {
 			edge2From := node
@@ -88,6 +91,11 @@ func find2OptBetterMoveFromConnections(tour *graph.Tour) (found bool) {
 			}
 
 			if edge2To.ID == edge1From.ID {
+				break
+			}
+
+			edge2 := graph.NewEdge(edge2From, edge2To)
+			if usedEdges[edge2.Hash()] == true {
 				break
 			}
 
