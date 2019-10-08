@@ -60,7 +60,6 @@ func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int) 
 		// Optimize whole population: individuals would be 'near' local optimum
 		for _, tour := range population.Tours {
 			operator.Optimize(tour)
-			fmt.Println("Optimized Individual")
 		}
 	}
 
