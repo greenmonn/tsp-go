@@ -29,7 +29,7 @@ func LocalSearchOptimize(tour *graph.Tour) {
 		found := find2OptBetterMoveFromConnections(tour)
 
 		iteration++
-		if iteration%10 == 0 {
+		if iteration%100 == 0 {
 			fmt.Println("\nIteration count: ", iteration)
 			tour.FromNodes(tour.Path)
 			fmt.Println("Distance: ", tour.Distance)

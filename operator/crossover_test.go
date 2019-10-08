@@ -1,6 +1,8 @@
 package operator
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -30,16 +32,27 @@ var _ = Describe("Crossover", func() {
 			p1 := graph.NewRandomTour()
 			p2 := graph.NewRandomTour()
 
-			// fmt.Println("parent1: ", graph.PathToIDs(p1.Path))
-			// fmt.Println("parent2: ", graph.PathToIDs(p2.Path))
+			children := OrderCrossover(p1, p2)
 
-			c1, c2 := OrderCrossover(p1, p2)
+			for _, c := range children {
+				Expect(len(c.Path)).To(Equal(N))
+			}
 
-			Expect(len(c1.Path)).To(Equal(N))
-			Expect(len(c2.Path)).To(Equal(N))
+			fmt.Println("Finish")
+		})
+	})
 
-			// fmt.Println("child1: ", graph.PathToIDs(c1.Path))
-			// fmt.Println("child2: ", graph.PathToIDs(c2.Path))
+	Describe("EdgeRecombinationCrossover", func() {
+		It("crossover two parent tours", func() {
+			p1 := graph.NewRandomTour()
+			p2 := graph.NewRandomTour()
+
+			children := EdgeRecombinationCrossover(p1, p2)
+
+			for _, c := range children {
+				Expect(len(c.Path)).To(Equal(N))
+			}
+
 		})
 	})
 })
