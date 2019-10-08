@@ -61,7 +61,7 @@ var _ = Describe("GA", func() {
 
 			Expect(len(population.Tours)).To(Equal(len(nextPopulation.Tours)))
 
-			Expect(population.BestTour().Distance >= nextPopulationBbestTour().Distance)
+			Expect(population.BestTour().Distance >= nextPopulation.BestTour().Distance)
 		})
 	})
 

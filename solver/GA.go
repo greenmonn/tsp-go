@@ -40,8 +40,38 @@ func GAOptimize(initialTours []*graph.Tour, populationNumber int, generations in
 	return population
 }
 
+func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int) *graph.Tour {
+	// Memetic Algorithm (GA + Local Search)
+
+	N := populationNumber
+	var population *Population
+
+	if len(initialTours) == 0 {
+		population = NewRandomPopulation(N)
+	} else {
+		population = NewPopulation(N, initialTours)
+	}
+
+	for i := 0; i < generations; i++ {
+		fmt.Printf("\n%dth Generation\n", i+1)
+
+		population = EvolvePopulation(population)
+
+		// Optimize whole population: individuals would be 'near' local optimum
+		for _, tour := range population.Tours {
+			operator.Optimize(tour)
+			fmt.Println("Optimized Individual")
+		}
+	}
+
+	// Local Search
+	operator.LocalSearchOptimize(population.BestTour())
+
+	return population.BestTour()
+}
+
 func EvolvePopulation(p *Population) *Population {
-	children := make([]*graph.Tour, p.N)
+	tours := make([]*graph.Tour, p.N)
 
 	offset := 0
 
@@ -50,44 +80,37 @@ func EvolvePopulation(p *Population) *Population {
 
 		fmt.Println("Current Best Distance: ", elite.Distance)
 
-		children[offset] = elite
+		tours[offset] = elite
 		offset++
 	}
 
 	var (
 		parent1, parent2 *graph.Tour
-		child1, child2   *graph.Tour
+		children         []*graph.Tour
 	)
 
 	for offset < p.N {
 		parent1, parent2 = selectParents(p)
 
-		child1, child2 = crossover(parent1, parent2)
+		children = crossover(parent1, parent2)
 
-		mutate(child1)
+		for _, child := range children {
+			mutate(child)
 
-		if child1 == nil {
-			log.Fatalln("Invalid child")
+			if child == nil {
+				log.Fatalln("Invalid child")
+			}
+
+			tours[offset] = child
+			offset++
+
+			if offset == p.N {
+				return NewPopulation(p.N, tours)
+			}
 		}
-
-		children[offset] = child1
-		offset++
-
-		if offset == p.N {
-			break
-		}
-
-		mutate(child2)
-
-		if child2 == nil {
-			log.Fatalln("Invalid child")
-		}
-
-		children[offset] = child2
-		offset++
 	}
 
-	return NewPopulation(p.N, children)
+	return NewPopulation(p.N, tours)
 }
 
 func selectParents(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) {
@@ -124,8 +147,8 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 	return
 }
 
-func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, child2 *graph.Tour) {
-	return operator.OrderCrossover(parent1, parent2)
+func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
+	return operator.EdgeRecombinationCrossover(parent1, parent2)
 }
 
 func mutate(t *graph.Tour) {

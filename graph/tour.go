@@ -78,6 +78,7 @@ func (t *Tour) FromNodes(connectedNodes []*Node) {
 
 func (t *Tour) FromPath(path []*Node) {
 	t.Path = path
+	t.UpdateConnections()
 	t.UpdateDistance()
 }
 

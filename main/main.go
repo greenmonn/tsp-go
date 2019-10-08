@@ -25,7 +25,7 @@ func main() {
 
 	startTime := time.Now()
 
-	greedy()
+	MAWithGreedyPopulation()
 
 	duration := time.Now().Sub(startTime)
 
@@ -75,10 +75,28 @@ func GAOptimizeFinalPopulation() {
 	fmt.Printf("%d Bytes Wrote\n", n)
 }
 
-// func GAWithGreedyPopulation() {
-// 	greedyTour := solver.SolveGreedy()
+func MAWithGreedyPopulation() {
+	greedyTour := solver.SolveGreedy()
+	N := graph.GetNodesCount()
 
-// }
+	tours := make([]*graph.Tour, N)
+
+	for i := 0; i < N; i++ {
+		tour := graph.NewTour()
+		tour.FromPath(greedyTour.Path)
+
+		operator.EdgeExchangeMutate(tour, 0.5)
+		tours[i] = tour
+	}
+
+	optTour := solver.SolveMA(tours, populationNumber, generations)
+
+	fmt.Println("Final Best Distance: ", optTour.Distance)
+
+	n := optTour.WritePathToFile(filename)
+
+	fmt.Printf("%d Bytes Wrote\n", n)
+}
 
 func greedy() {
 	tour := solver.SolveGreedy()
