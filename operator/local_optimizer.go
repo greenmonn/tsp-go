@@ -21,7 +21,7 @@ func Optimize(tour *graph.Tour) {
 }
 
 func FastOptimize(tour *graph.Tour) {
-	// still O(N^2) but half time (less efficient)
+	// still O(N^3) but half time (less efficient)
 	tour.UpdateConnections()
 
 	N := graph.GetNodesCount()
@@ -67,7 +67,7 @@ func find2OptBetterMove(tour *graph.Tour) (found bool) {
 	found = false
 
 	for i := 0; i < N; i++ {
-		for j := i + 2; j < i+N-1; j++ {
+		for j := i + 2; j < N; j++ {
 			found = SwapTwoEdges(tour, i, j, true)
 
 			if found {
@@ -88,13 +88,9 @@ func find2OptBetterMoveFromConnections(tour *graph.Tour) (found bool) {
 	for i := 0; i < N; i++ {
 		edge1To := tour.GetNode(i)
 		edge1From := edge1To.Connected[0]
-		edge1 := graph.NewEdge(edge1From, edge1To)
 
 		prev := edge1To
 		node := edge1To.Connected[1]
-
-		usedEdges := make(map[string]bool)
-		usedEdges[edge1.Hash()] = true
 
 		for {
 			edge2From := node
@@ -109,11 +105,6 @@ func find2OptBetterMoveFromConnections(tour *graph.Tour) (found bool) {
 			}
 
 			if edge2To.ID == edge1From.ID {
-				break
-			}
-
-			edge2 := graph.NewEdge(edge2From, edge2To)
-			if usedEdges[edge2.Hash()] == true {
 				break
 			}
 

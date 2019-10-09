@@ -7,8 +7,10 @@ import (
 )
 
 type Tour struct {
-	Path     []*Node
-	Distance float64
+	Path      []*Node
+	Distance  float64
+	Edges     map[string]*Edge
+	FlexEdges []*Edge
 }
 
 func NewTour() *Tour {

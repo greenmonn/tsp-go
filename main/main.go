@@ -28,7 +28,7 @@ func main() {
 
 	startTime := time.Now()
 
-	MAWithGreedyPopulation()
+	greedy()
 
 	duration := time.Now().Sub(startTime)
 

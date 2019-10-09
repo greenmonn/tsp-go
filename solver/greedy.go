@@ -13,7 +13,7 @@ import (
 func SolveGreedy() (tour *graph.Tour) {
 	fmt.Println("Start Solving Greedy")
 
-	nodes := copyNodesFromGraph()
+	nodes := graph.CopyNodesFromGraph()
 
 	edges := &priorityQueue{}
 	heap.Init(edges)
@@ -38,7 +38,7 @@ func SolveGreedy() (tour *graph.Tour) {
 func PartialRandomGreedy() (tour *graph.Tour) {
 	fmt.Println("Start Solving Greedy")
 
-	nodes := copyNodesFromGraph()
+	nodes := graph.CopyNodesFromGraph()
 
 	sets, setsCount := randomConnect(nodes)
 
@@ -73,7 +73,7 @@ func connect(edges *priorityQueue, nodes []*graph.Node, sets map[int]*[]*graph.N
 		}
 	}
 
-	for {
+	for setsCount > 0 {
 		e := heap.Pop(edges).(*graph.Edge)
 		from := e.From
 		to := e.To
@@ -91,10 +91,6 @@ func connect(edges *priorityQueue, nodes []*graph.Node, sets map[int]*[]*graph.N
 
 		e.From.Connected = append(e.From.Connected, to)
 		e.To.Connected = append(e.To.Connected, from)
-
-		if setsCount == 1 {
-			break
-		}
 
 		mergedSet := append(*sets[from.ID], *sets[to.ID]...)
 
@@ -162,41 +158,6 @@ func randomConnect(nodes []*graph.Node) (sets map[int]*[]*graph.Node, setsCount 
 	}
 
 	return
-}
-
-func copyNodesFromGraph() []*graph.Node {
-	N := graph.GetNodesCount()
-
-	nodes := make([]*graph.Node, N)
-	for i := 0; i < N; i++ {
-		id := graph.GetNode(i).ID
-		x := graph.GetNode(i).X
-		y := graph.GetNode(i).Y
-		nodes[i] = graph.NewNode(id, x, y)
-	}
-
-	return nodes
-}
-
-func initEdges(edges *priorityQueue, nodes []*graph.Node) {
-	N := graph.GetNodesCount()
-	D := graph.GetDistanceByIndex
-
-	for i := 0; i < N; i++ {
-		skipID := -1
-		if nodes[i].Degree > 0 {
-			skipID = nodes[i].Connected[0].ID
-
-		}
-
-		for j := 0; j < i; j++ {
-			if skipID == nodes[j].ID {
-				continue
-			}
-			edge := &graph.Edge{From: nodes[i], To: nodes[j], Distance: D(i, j)}
-			heap.Push(edges, edge)
-		}
-	}
 }
 
 func randomUnvisitedNode(unvisitedNodes map[int]*graph.Node) *graph.Node {

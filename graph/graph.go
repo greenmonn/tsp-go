@@ -1,9 +1,10 @@
 package graph
 
 type Graph struct {
-	N         int
-	Nodes     []*Node
-	Distances [][]float64
+	N                int
+	Nodes            []*Node
+	Distances        [][]float64
+	NearestNeighbors map[int][]*Node
 }
 
 var (
@@ -36,6 +37,20 @@ func SetGraph(nodes []*Node) {
 	}
 }
 
+func CopyNodesFromGraph() []*Node {
+	N := GetNodesCount()
+
+	nodes := make([]*Node, N)
+	for i := 0; i < N; i++ {
+		id := GetNode(i).ID
+		x := GetNode(i).X
+		y := GetNode(i).Y
+		nodes[i] = NewNode(id, x, y)
+	}
+
+	return nodes
+}
+
 func GetNodes() []*Node {
 	return graph.Nodes
 }
@@ -49,6 +64,9 @@ func GetNodesCount() int {
 }
 
 func GetDistanceByIndex(i int, j int) float64 {
+	if i < j {
+		i, j = j, i
+	}
 	return graph.Distances[i][j]
 }
 

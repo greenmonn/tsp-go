@@ -7,6 +7,136 @@ import (
 	"github.com/greenmonn/tsp-go/graph"
 )
 
+func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate float64, iRate float64) (children []*graph.Tour) {
+	N := graph.GetNodesCount()
+
+	nodes := graph.CopyNodesFromGraph()
+
+	candidateEdges := graph.NewEdges(nodes)
+
+	childEdges := make(map[string]*graph.Edge)
+	flexEdges := make([]*graph.Edge, 0, N)
+
+	sets := make(map[int]*[]*graph.Node)
+	setsCount := graph.GetNodesCount()
+
+	for i := 0; i < N; i++ {
+		node := nodes[i]
+		sets[node.ID] = &[]*graph.Node{node}
+	}
+
+	// Copy common edges
+	for _, e := range parent1.Edges {
+		id := e.Hash()
+		_, exist := parent2.Edges[id]
+
+		if exist && cRate < rand.Float64() {
+			childEdges[id] = graph.NewEdge(nodes[e.From.ID-1], nodes[e.To.ID-1])
+
+			childEdges[id].UpdateNodes()
+			delete(candidateEdges, id)
+
+			mergedSet := append(*sets[e.From.ID], *sets[e.To.ID]...)
+
+			for _, node := range mergedSet {
+				sets[node.ID] = &mergedSet
+				delete(candidateEdges, graph.EdgeID(e.From.ID, node.ID))
+				delete(candidateEdges, graph.EdgeID(e.To.ID, node.ID))
+			}
+
+			setsCount--
+		}
+	}
+
+	// Insert new edges
+	for k := 0; k < int(float64(setsCount)*nRate); k++ {
+		randIndex := int(float64(N) * rand.Float64())
+		i := nodes[randIndex]
+
+		nearests := graph.NearestNeighbors(i.ID)
+		j := nearests[rand.Intn(len(nearests))]
+
+		// (i, j) feasible?
+		if i.Degree == 2 || j.Degree == 2 {
+			continue
+		}
+
+		if setsCount > 1 && sets[i.ID] == sets[j.ID] {
+			continue
+		}
+
+		e := graph.NewEdge(i, j)
+		edgeID := e.Hash()
+		// (i, j) not in a
+		_, exist := parent1.Edges[edgeID]
+		if exist {
+			continue
+		}
+		// (i, j) not in b
+		_, exist = parent2.Edges[edgeID]
+		if exist {
+			continue
+		}
+
+		childEdges[edgeID] = e
+		flexEdges = append(flexEdges, e)
+		e.UpdateNodes()
+
+		mergedSet := append(*sets[i.ID], *sets[j.ID]...)
+
+		for _, node := range mergedSet {
+			sets[node.ID] = &mergedSet
+			delete(candidateEdges, graph.EdgeID(i.ID, node.ID))
+			delete(candidateEdges, graph.EdgeID(j.ID, node.ID))
+		}
+
+		setsCount--
+
+	}
+
+	candidates := make([]*graph.Edge, 0, len(candidateEdges))
+	for _, edge := range candidateEdges {
+		candidates = append(candidates, edge)
+	}
+
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].Distance < candidates[j].Distance
+	})
+	// Inherit edges from parents
+	for k := 0; k < int(float64(setsCount)*iRate); k++ {
+
+		// parent := selectRandomTour([]*graph.Tour{parent1, parent2})
+	}
+
+	// greedy completion
+	for setsCount > 0 {
+		e := selectFromTwoShortest(candidates)
+		edgeID := e.Hash()
+
+		childEdges[edgeID] = e
+		flexEdges = append(flexEdges, e)
+		e.UpdateNodes()
+
+		mergedSet := append(*sets[e.From.ID], *sets[e.To.ID]...)
+
+		for _, node := range mergedSet {
+			sets[node.ID] = &mergedSet
+			delete(candidateEdges, graph.EdgeID(e.From.ID, node.ID))
+			delete(candidateEdges, graph.EdgeID(e.To.ID, node.ID))
+		}
+
+		setsCount--
+	}
+
+	child := graph.NewTour()
+	child.FromNodes(nodes)
+
+	child.Edges = childEdges
+	child.FlexEdges = flexEdges
+
+	return []*graph.Tour{child}
+}
+
 func OrderCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
 	N := graph.GetNodesCount()
 
@@ -65,23 +195,6 @@ func OrderCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
 	return []*graph.Tour{child1, child2}
 }
 
-func selectRandomParents(parents []*graph.Tour) *graph.Tour {
-	unit := float64(1.0 / len(parents))
-	probability := unit
-
-	r := rand.Float64()
-
-	for _, p := range parents {
-		if r < probability {
-			return p
-		}
-
-		probability += unit
-	}
-
-	return parents[len(parents)-1]
-}
-
 func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
 
 	N := graph.GetNodesCount()
@@ -91,7 +204,7 @@ func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child
 	parent1.UpdateConnections()
 	parent2.UpdateConnections()
 
-	node := selectRandomParents([]*graph.Tour{parent1, parent2}).GetNode(0)
+	node := selectRandomTour([]*graph.Tour{parent1, parent2}).GetNode(0)
 
 	index := 0
 	connectionsUnion := make(map[int][]*graph.Node)
@@ -166,6 +279,10 @@ func EdgeRecombinationCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child
 	return []*graph.Tour{child}
 }
 
+func NoCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
+	return []*graph.Tour{parent1, parent2}
+}
+
 func chooseRandomID(unUsedNodes map[int]*graph.Node) (int, *graph.Node) {
 	i := rand.Intn(len(unUsedNodes))
 	for key, node := range unUsedNodes {
@@ -177,11 +294,57 @@ func chooseRandomID(unUsedNodes map[int]*graph.Node) (int, *graph.Node) {
 	return -1, nil
 }
 
-func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	
-	return
+func selectFromTwoShortest(candidates []*graph.Edge) (shortest *graph.Edge) {
+	shortest = candidates[0]
+	secondShortest := candidates[0]
+
+	for _, e := range candidates[1:] {
+		if e.Distance < shortest.Distance {
+			secondShortest = shortest
+			shortest = e
+			break
+		}
+		if e.Distance < secondShortest.Distance {
+			secondShortest = e
+		}
+	}
+
+	if 0.5 < rand.Float64() {
+		return secondShortest
+	}
+	return shortest
 }
 
-func NoCrossover(parent1 *graph.Tour, parent2 *graph.Tour) []*graph.Tour {
-	return []*graph.Tour{parent1, parent2}
+func selectRandomTour(parents []*graph.Tour) *graph.Tour {
+	unit := float64(1.0 / len(parents))
+	probability := unit
+
+	r := rand.Float64()
+
+	for _, p := range parents {
+		if r < probability {
+			return p
+		}
+
+		probability += unit
+	}
+
+	return parents[len(parents)-1]
+}
+
+func selectRandomNode(nodes []*graph.Node) *graph.Node {
+	unit := float64(1.0 / len(nodes))
+	probability := unit
+
+	r := rand.Float64()
+
+	for _, p := range nodes {
+		if r < probability {
+			return p
+		}
+
+		probability += unit
+	}
+
+	return nodes[len(nodes)-1]
 }
