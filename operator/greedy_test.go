@@ -3,8 +3,8 @@ package operator
 import (
 	"container/heap"
 
+	"github.com/greenmonn/tsp-go/container"
 	"github.com/greenmonn/tsp-go/graph"
-	"github.com/greenmonn/tsp-go/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,7 +31,7 @@ var _ = Describe("Greedy", func() {
 
 	Describe("GreedyConnect", func() {
 		It("connects nodes in greedy way", func() {
-			edges := &types.PriorityQueue{}
+			edges := &container.PriorityQueue{}
 			heap.Init(edges)
 
 			for i := 0; i < N; i++ {

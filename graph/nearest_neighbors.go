@@ -1,5 +1,7 @@
 package graph
 
+import "math"
+
 func SetNearestNeighbors(K int) {
 	graph.NearestNeighbors = nearestNeighbors(K)
 }
@@ -25,6 +27,10 @@ func nearestNeighbors(K int) map[int][]*Node {
 func findNearests(nodes []*Node, count int, i int) []*Node {
 	nearests := make([]*Node, count)
 	values := make([]float64, count)
+
+	for i := 0; i < count; i++ {
+		values[i] = math.MaxFloat64
+	}
 
 	N := GetNodesCount()
 	D := GetDistanceByIndex

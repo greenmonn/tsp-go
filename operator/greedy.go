@@ -7,8 +7,8 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/greenmonn/tsp-go/container"
 	"github.com/greenmonn/tsp-go/graph"
-	"github.com/greenmonn/tsp-go/types"
 )
 
 func PartialRandomGreedy() (tour *graph.Tour) {
@@ -18,10 +18,10 @@ func PartialRandomGreedy() (tour *graph.Tour) {
 
 	sets, setsCount, connectedEdges := randomConnect(nodes)
 
-	edges := &types.PriorityQueue{}
+	edges := &container.PriorityQueue{}
 	heap.Init(edges)
 
-	types.InitEdges(edges, nodes)
+	container.InitEdges(edges, nodes)
 
 	fmt.Println("1: Make Edges Priority Queue")
 
@@ -34,13 +34,13 @@ func PartialRandomGreedy() (tour *graph.Tour) {
 
 	// For GX Crossover: maintain edges set / non-fixed edges set
 	tour.Edges = connectedEdges
-	tour.FlexEdges = make([]*graph.Edge, len(connectedEdges))
-	index := 0
+	tour.FlexEdges = make([]*graph.Edge, 0) // Make all edges fixed
 
-	for _, e := range connectedEdges {
-		tour.FlexEdges[index] = e
-		index++
-	}
+	// index := 0
+	// for _, e := range connectedEdges {
+	// 	tour.FlexEdges[index] = e
+	// 	index++
+	// }
 
 	fmt.Println("3: Construct tour from connected nodes")
 
@@ -48,7 +48,7 @@ func PartialRandomGreedy() (tour *graph.Tour) {
 
 }
 
-func GreedyConnect(edges *types.PriorityQueue, nodes []*graph.Node, sets map[int]*[]*graph.Node, setsCount int, connectedEdges map[string]*graph.Edge) {
+func GreedyConnect(edges *container.PriorityQueue, nodes []*graph.Node, sets map[int]*[]*graph.Node, setsCount int, connectedEdges map[string]*graph.Edge) {
 	if sets == nil {
 		sets = make(map[int]*[]*graph.Node)
 		setsCount = graph.GetNodesCount()

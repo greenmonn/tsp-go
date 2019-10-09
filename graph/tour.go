@@ -38,6 +38,8 @@ func (t *Tour) FromNodes(connectedNodes []*Node) {
 		return
 	}
 
+	// fmt.Println("Constructing path from connected nodes. . .")
+
 	N := GetNodesCount()
 	var prevNode *Node
 	node := connectedNodes[0]
@@ -96,6 +98,22 @@ func (t *Tour) UpdateConnections() {
 	}
 }
 
+func (t *Tour) UpdateEdges() {
+	node := t.Path[0]
+
+	t.Edges = make(map[string]*Edge)
+
+	// Find edges from path
+	for _, nextNode := range t.Path[1:] {
+		edge := NewEdge(node, nextNode)
+		t.Edges[edge.Hash()] = edge
+		node = nextNode
+	}
+
+	edge := NewEdge(t.Path[len(t.Path)-1], t.Path[0])
+	t.Edges[edge.Hash()] = edge
+}
+
 func (t *Tour) GetNode(index int) *Node {
 	N := GetNodesCount()
 	for index >= N {
@@ -147,4 +165,16 @@ func makeRange(min, max int) []int {
 		a[i] = min + i
 	}
 	return a
+}
+
+func areEqualIntSlices(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }

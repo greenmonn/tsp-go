@@ -1,5 +1,7 @@
 package graph
 
+import "strconv"
+
 type Edge struct {
 	From     *Node
 	To       *Node
@@ -33,17 +35,15 @@ func NewEdges(nodes []*Node) map[string]*Edge {
 func (e *Edge) Hash() string {
 	x := e.From.ID
 	y := e.To.ID
-	if e.From.ID > e.To.ID {
-		x, y = y, x
-	}
-	return string(x) + "#" + string(y)
+
+	return EdgeID(x, y)
 }
 
-func EdgeID(id1 int, id2 int) string {
-	if id1 > id2 {
-		id1, id2 = id2, id1
+func EdgeID(x int, y int) string {
+	if x > y {
+		x, y = y, x
 	}
-	return string(id1) + "#" + string(id2)
+	return strconv.Itoa(x) + "#" + strconv.Itoa(y)
 }
 
 func (e *Edge) UpdateNodes() {

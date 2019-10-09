@@ -4,9 +4,9 @@ import (
 	"container/heap"
 	"fmt"
 
+	"github.com/greenmonn/tsp-go/container"
 	"github.com/greenmonn/tsp-go/graph"
 	"github.com/greenmonn/tsp-go/operator"
-	"github.com/greenmonn/tsp-go/types"
 )
 
 func SolveGreedy() (tour *graph.Tour) {
@@ -14,10 +14,10 @@ func SolveGreedy() (tour *graph.Tour) {
 
 	nodes := graph.CopyNodesFromGraph()
 
-	edges := &types.PriorityQueue{}
+	edges := &container.PriorityQueue{}
 	heap.Init(edges)
 
-	types.InitEdges(edges, nodes)
+	container.InitEdges(edges, nodes)
 
 	fmt.Println("1: Make Edges Priority Queue")
 

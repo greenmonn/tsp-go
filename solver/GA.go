@@ -2,7 +2,6 @@ package solver
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 
 	"github.com/greenmonn/tsp-go/graph"
@@ -11,7 +10,7 @@ import (
 
 const (
 	tournamentSize = 6
-	mutationRate   = 0.02
+	mutationRate   = 0.01
 	elitism        = true
 )
 
@@ -58,12 +57,13 @@ func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int, 
 		population = EvolvePopulation(population)
 
 		// Optimize whole population: individuals would be 'near' local optimum
-		if i == 0 || i%optimizeGap != 0 {
+		if i%optimizeGap != 0 {
 			continue
 		}
 
 		for _, tour := range population.Tours {
-			operator.LocalSearchOptimize(tour, 100)
+			operator.FastLocalSearchOptimize(tour)
+
 		}
 	}
 
@@ -98,10 +98,6 @@ func EvolvePopulation(p *Population) *Population {
 
 		for _, child := range children {
 			mutate(child)
-
-			if child == nil {
-				log.Fatalln("Invalid child")
-			}
 
 			tours[offset] = child
 			offset++
@@ -150,9 +146,29 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 }
 
 func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	return operator.EdgeRecombinationCrossover(parent1, parent2)
+	return operator.GXCrossover(parent1, parent2, 1.0, 0, 0.75)
 }
 
 func mutate(t *graph.Tour) {
-	operator.EdgeExchangeMutate(t, mutationRate)
+	operator.EdgeExchangeMutateForGX(t, mutationRate)
+}
+
+func makeRange(min, max int) []int {
+	a := make([]int, max-min+1)
+	for i := range a {
+		a[i] = min + i
+	}
+	return a
+}
+
+func areEqualIntSlices(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }

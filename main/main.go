@@ -28,7 +28,7 @@ func main() {
 
 	startTime := time.Now()
 
-	GAFromGreedyPopulation()
+	MAWithGreedyPopulation()
 
 	duration := time.Now().Sub(startTime)
 
@@ -36,6 +36,8 @@ func main() {
 }
 
 func GAFromRandomPopulation() {
+	graph.SetNearestNeighbors(5)
+
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
 
 	fmt.Println("Distance: ", tour.Distance)
@@ -55,11 +57,13 @@ func GAFromGreedyPopulation() {
 	tours := make([]*graph.Tour, populationNumber)
 
 	for i := 0; i < populationNumber; i++ {
-		tour := solver.PartialRandomGreedy()
+		tour := operator.PartialRandomGreedy()
 		fmt.Println("Random Greedy: ", tour.Distance)
 
 		tours[i] = tour
 	}
+
+	graph.SetNearestNeighbors(5)
 
 	tour := solver.SolveGA(tours, populationNumber, generations)
 
@@ -119,7 +123,7 @@ func MAWithGreedyPopulation() {
 	tours := make([]*graph.Tour, populationNumber)
 
 	for i := 0; i < populationNumber; i++ {
-		tour := solver.PartialRandomGreedy()
+		tour := operator.PartialRandomGreedy()
 		fmt.Println("Random Greedy: ", tour.Distance)
 
 		tours[i] = tour

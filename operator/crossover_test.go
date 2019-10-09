@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"sort"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,17 +15,14 @@ var _ = Describe("Crossover", func() {
 		N int
 	)
 
-	BeforeEach(func() {
-		N = 8
-		distances := make([][]float64, N)
-		for i := 0; i < N; i++ {
-			distances[i] = make([]float64, i)
-			for j := 0; j < i; j++ {
-				distances[i][j] = 1.0
-			}
-		}
+	const (
+		filename = "fl1400"
+	)
 
-		graph.SetGraphByMatrix(distances)
+	BeforeEach(func() {
+		graph.SetGraphFromFile("problems/" + filename + ".tsp")
+
+		N = graph.GetNodesCount()
 	})
 
 	Describe("OrderCrossover", func() {
@@ -62,6 +60,10 @@ var _ = Describe("Crossover", func() {
 
 	Describe("GXCrossover", func() {
 		// Parents must have edges map
+		BeforeEach(func() {
+			graph.SetNearestNeighbors(5)
+		})
+
 		It("crossover two parent tours", func() {
 			p1 := PartialRandomGreedy()
 			p2 := PartialRandomGreedy()
@@ -73,6 +75,11 @@ var _ = Describe("Crossover", func() {
 
 			for _, c := range children {
 				Expect(len(c.Path)).To(Equal(N))
+
+				idPath := graph.PathToIDs(c.Path)
+				sort.Ints(idPath)
+
+				Expect(idPath).To(Equal(makeRange(1, N)))
 				fmt.Println("Distance: ", c.Distance)
 			}
 

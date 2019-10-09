@@ -1,8 +1,12 @@
 package operator
 
 import (
+	"container/heap"
+	"log"
 	"math/rand"
 	"sort"
+
+	"github.com/greenmonn/tsp-go/container"
 
 	"github.com/greenmonn/tsp-go/graph"
 )
@@ -26,12 +30,19 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 	}
 
 	// Copy common edges
-	for _, e := range parent1.Edges {
-		id := e.Hash()
+	for id, e := range parent1.Edges {
 		_, exist := parent2.Edges[id]
 
-		if exist && cRate < rand.Float64() {
+		if exist && rand.Float64() < cRate {
 			childEdges[id] = graph.NewEdge(nodes[e.From.ID-1], nodes[e.To.ID-1])
+
+			// if childEdges[id].From.ID != e.From.ID {
+			// 	log.Fatalln("ID mismatch")
+			// }
+
+			// if childEdges[id].To.ID != e.To.ID {
+			// 	log.Fatalln("ID mismatch")
+			// }
 
 			childEdges[id].UpdateNodes()
 			delete(candidateEdges, id)
@@ -54,7 +65,10 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 		i := nodes[randIndex]
 
 		nearests := graph.NearestNeighbors(i.ID)
-		j := nearests[rand.Intn(len(nearests))]
+		id := nearests[rand.Intn(len(nearests))].ID
+		// TODO: find nodes by ID
+		// Currently guaranteed: ID = index + 1
+		j := nodes[id-1]
 
 		// (i, j) feasible?
 		if i.Degree == 2 || j.Degree == 2 {
@@ -81,6 +95,7 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 		childEdges[edgeID] = e
 		flexEdges = append(flexEdges, e)
 		e.UpdateNodes()
+		delete(candidateEdges, edgeID)
 
 		mergedSet := append(*sets[i.ID], *sets[j.ID]...)
 
@@ -94,28 +109,104 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 
 	}
 
-	candidates := make([]*graph.Edge, 0, len(candidateEdges))
-	for _, edge := range candidateEdges {
-		candidates = append(candidates, edge)
-	}
-
-	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].Distance < candidates[j].Distance
-	})
 	// Inherit edges from parents
 	for k := 0; k < int(float64(setsCount)*iRate); k++ {
+		parent := selectRandomTour([]*graph.Tour{parent1, parent2})
 
-		// parent := selectRandomTour([]*graph.Tour{parent1, parent2})
-	}
+		hasCandidateEdges := false
+		inherits := make([]*graph.Edge, 0)
+		for id := range parent.Edges {
+			if candidateEdges[id] != nil {
+				inherits = append(inherits, candidateEdges[id])
+				hasCandidateEdges = true
+			}
+		}
 
-	// greedy completion
-	for setsCount > 0 {
-		e := selectFromTwoShortest(candidates)
+		if !hasCandidateEdges {
+			continue
+		}
+
+		var e *graph.Edge
+
+		if len(inherits) == 1 {
+			e = graph.NewEdge(nodes[inherits[0].From.ID-1], nodes[inherits[0].To.ID-1])
+		} else {
+
+			sort.Slice(inherits, func(i, j int) bool {
+				return inherits[i].Distance < inherits[j].Distance
+			})
+
+			e1 := inherits[0]
+			e2 := inherits[1]
+
+			e = e1
+			if rand.Float64() < 0.5 {
+				e = e2
+			}
+		}
+
+		if e.From.Degree == 2 || e.To.Degree == 2 {
+			continue
+		}
+
 		edgeID := e.Hash()
 
 		childEdges[edgeID] = e
 		flexEdges = append(flexEdges, e)
 		e.UpdateNodes()
+		delete(candidateEdges, edgeID)
+
+		mergedSet := append(*sets[e.From.ID], *sets[e.To.ID]...)
+
+		for _, node := range mergedSet {
+			sets[node.ID] = &mergedSet
+			delete(candidateEdges, graph.EdgeID(e.From.ID, node.ID))
+			delete(candidateEdges, graph.EdgeID(e.To.ID, node.ID))
+		}
+
+		setsCount--
+
+	}
+
+	candidates := &container.PriorityQueue{}
+	heap.Init(candidates)
+
+	for _, edge := range candidateEdges {
+		heap.Push(candidates, edge)
+	}
+
+	// greedy completion
+	for setsCount > 0 {
+		var e *graph.Edge
+
+		e1 := heap.Pop(candidates)
+		if candidates.Len() < 1 {
+			e = e1.(*graph.Edge)
+		} else {
+			e2 := heap.Pop(candidates)
+			if rand.Float64() < 0.5 {
+				e = e2.(*graph.Edge)
+				heap.Push(candidates, e1)
+			} else {
+				e = e1.(*graph.Edge)
+				heap.Push(candidates, e2)
+			}
+		}
+
+		if e.From.Degree == 2 || e.To.Degree == 2 {
+			continue
+		}
+
+		if setsCount > 1 && sets[e.From.ID] == sets[e.To.ID] {
+			continue
+		}
+
+		edgeID := e.Hash()
+
+		childEdges[edgeID] = e
+		flexEdges = append(flexEdges, e)
+		e.UpdateNodes()
+		delete(candidateEdges, edgeID)
 
 		mergedSet := append(*sets[e.From.ID], *sets[e.To.ID]...)
 
@@ -128,10 +219,15 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 		setsCount--
 	}
 
+	if len(childEdges) != N {
+		log.Fatalln("Insufficient child edges")
+	}
+
 	child := graph.NewTour()
 	child.FromNodes(nodes)
 
 	child.Edges = childEdges
+
 	child.FlexEdges = flexEdges
 
 	return []*graph.Tour{child}
