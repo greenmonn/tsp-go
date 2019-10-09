@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/greenmonn/tsp-go/graph"
 )
@@ -19,13 +20,30 @@ func Optimize(tour *graph.Tour) {
 	}
 }
 
-func LocalSearchOptimize(tour *graph.Tour) {
+func FastOptimize(tour *graph.Tour) {
+	// still O(N^2) but half time (less efficient)
+	tour.UpdateConnections()
+
+	N := graph.GetNodesCount()
+
+	for i := 0; i < N; i++ {
+		for j := i + 2; j < N; j++ {
+			SwapTwoEdges(tour, i, j, true)
+		}
+	}
+}
+
+func LocalSearchOptimize(tour *graph.Tour, iterationLimit int) {
 	// Search neighbors until no better neighbors exist
+	if iterationLimit < 0 {
+		iterationLimit = math.MaxInt64
+	}
+
 	tour.UpdateConnections()
 
 	iteration := 0
 
-	for {
+	for iteration < iterationLimit {
 		found := find2OptBetterMoveFromConnections(tour)
 
 		iteration++

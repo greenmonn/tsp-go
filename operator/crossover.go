@@ -177,7 +177,8 @@ func chooseRandomID(unUsedNodes map[int]*graph.Node) (int, *graph.Node) {
 	return -1, nil
 }
 
-func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (child1 *graph.Tour, child2 *graph.Tour) {
+func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
+	
 	return
 }
 
