@@ -3,7 +3,6 @@ package solver
 import (
 	"container/heap"
 	"fmt"
-	"math"
 	"sort"
 
 	"github.com/greenmonn/tsp-go/graph"
@@ -65,12 +64,12 @@ var _ = Describe("Greedy", func() {
 				}
 			}
 
-			edgesSum := connect(edges, nodes, N)
+			connect(edges, nodes, nil, -1)
 
 			tour := graph.NewTour()
 			tour.FromNodes(nodes)
 
-			Expect(math.Abs(tour.Distance-edgesSum) <= 1)
+			Expect(tour.Distance - 36).Should(BeNumerically("<", 1.0))
 		})
 	})
 })

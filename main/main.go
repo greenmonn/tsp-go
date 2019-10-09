@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/greenmonn/tsp-go/graph"
@@ -20,6 +21,8 @@ var (
 
 func main() {
 	parseArguments()
+
+	rand.Seed(time.Now().UnixNano())
 
 	graph.SetGraphFromFile("problems/" + filename + ".tsp")
 
@@ -51,10 +54,20 @@ func GAFromRandomPopulation() {
 func LocalSearchFromRandomTour() {
 	tour := graph.NewRandomTour()
 
-	operator.LocalSearchOptimize(tour)
+	operator.LocalSearchOptimize(tour, -1)
 
 	fmt.Println("Distance: ", tour.Distance)
 
+}
+
+func IterativeOptimization() {
+	tour := graph.NewRandomTour()
+
+	for i := 0; i < optimizationCount; i++ {
+		operator.Optimize(tour)
+	}
+
+	fmt.Println("Distance: ", tour.Distance)
 }
 
 func GAOptimizeFinalPopulation() {
@@ -76,23 +89,18 @@ func GAOptimizeFinalPopulation() {
 }
 
 func MAWithGreedyPopulation() {
-	greedyTour := solver.SolveGreedy()
+	optimizeGap := 1
 
-	fmt.Println("Greedy Solution: ", greedyTour.Distance)
+	tours := make([]*graph.Tour, populationNumber)
 
-	N := graph.GetNodesCount()
+	for i := 0; i < populationNumber; i++ {
+		tour := solver.PartialRandomGreedy()
+		fmt.Println("Random Greedy: ", tour.Distance)
 
-	tours := make([]*graph.Tour, N)
-
-	for i := 0; i < N; i++ {
-		tour := graph.NewTour()
-		tour.FromPath(greedyTour.Path)
-
-		operator.EdgeExchangeMutate(tour, 0.5)
 		tours[i] = tour
 	}
 
-	optTour := solver.SolveMA(tours, populationNumber, generations)
+	optTour := solver.SolveMA(tours, populationNumber, generations, optimizeGap)
 
 	fmt.Println("Final Best Distance: ", optTour.Distance)
 
@@ -103,7 +111,7 @@ func MAWithGreedyPopulation() {
 
 func MAWithRandomPopulation() {
 
-	optTour := solver.SolveMA([]*graph.Tour{}, populationNumber, generations)
+	optTour := solver.SolveMA([]*graph.Tour{}, populationNumber, generations, 10)
 
 	fmt.Println("Final Best Distance: ", optTour.Distance)
 
@@ -117,7 +125,7 @@ func greedy() {
 
 	fmt.Println("Distance: ", tour.Distance)
 
-	operator.LocalSearchOptimize(tour)
+	operator.LocalSearchOptimize(tour, -1)
 
 	fmt.Println("Distance after Optimization: ", tour.Distance)
 

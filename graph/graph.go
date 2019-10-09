@@ -6,7 +6,9 @@ type Graph struct {
 	Distances [][]float64
 }
 
-var graph *Graph // Singleton
+var (
+	graph *Graph // Singleton
+)
 
 func SetGraphFromFile(filepath string) {
 	SetGraph(ReadNodesFromFile(filepath))

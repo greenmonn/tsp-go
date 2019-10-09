@@ -11,7 +11,7 @@ import (
 
 const (
 	tournamentSize = 6
-	mutationRate   = 0.01
+	mutationRate   = 0.02
 	elitism        = true
 )
 
@@ -40,7 +40,7 @@ func GAOptimize(initialTours []*graph.Tour, populationNumber int, generations in
 	return population
 }
 
-func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int) *graph.Tour {
+func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int, optimizeGap int) *graph.Tour {
 	// Memetic Algorithm (GA + Local Search)
 
 	N := populationNumber
@@ -58,13 +58,16 @@ func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int) 
 		population = EvolvePopulation(population)
 
 		// Optimize whole population: individuals would be 'near' local optimum
+		if i == 0 || i%optimizeGap != 0 {
+			continue
+		}
+
 		for _, tour := range population.Tours {
-			operator.Optimize(tour)
+			operator.LocalSearchOptimize(tour, 100)
 		}
 	}
 
-	// Local Search
-	operator.LocalSearchOptimize(population.BestTour())
+	operator.LocalSearchOptimize(population.BestTour(), -1)
 
 	return population.BestTour()
 }
@@ -74,11 +77,11 @@ func EvolvePopulation(p *Population) *Population {
 
 	offset := 0
 
+	elite := p.BestTour()
+
+	fmt.Println("Current Best Distance: ", elite.Distance)
+
 	if elitism {
-		elite := p.BestTour()
-
-		fmt.Println("Current Best Distance: ", elite.Distance)
-
 		tours[offset] = elite
 		offset++
 	}
@@ -147,7 +150,7 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 }
 
 func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	return operator.EdgeRecombinationCrossover(parent1, parent2)
+	return operator.OrderCrossover(parent1, parent2)
 }
 
 func mutate(t *graph.Tour) {

@@ -2,14 +2,8 @@ package graph
 
 import (
 	"math/rand"
-	"sync"
-	"time"
 
 	"github.com/thoas/go-funk"
-)
-
-var (
-	once sync.Once
 )
 
 type Tour struct {
@@ -25,10 +19,6 @@ func NewTour() *Tour {
 }
 
 func NewRandomTour() *Tour {
-	once.Do(func() {
-		rand.Seed(time.Now().UnixNano())
-	})
-
 	N := GetNodesCount()
 
 	ids := makeRange(1, N)
