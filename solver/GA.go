@@ -150,7 +150,7 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 }
 
 func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	return operator.OrderCrossover(parent1, parent2)
+	return operator.EdgeRecombinationCrossover(parent1, parent2)
 }
 
 func mutate(t *graph.Tour) {

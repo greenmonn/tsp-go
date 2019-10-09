@@ -28,7 +28,7 @@ func main() {
 
 	startTime := time.Now()
 
-	greedy()
+	GAFromGreedyPopulation()
 
 	duration := time.Now().Sub(startTime)
 
@@ -37,6 +37,31 @@ func main() {
 
 func GAFromRandomPopulation() {
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
+
+	fmt.Println("Distance: ", tour.Distance)
+
+	for i := 0; i < optimizationCount; i++ {
+		operator.Optimize(tour)
+	}
+
+	fmt.Println("Distance after Optimization: ", tour.Distance)
+
+	n := tour.WritePathToFile(filename)
+
+	fmt.Printf("%d Bytes Wrote\n", n)
+}
+
+func GAFromGreedyPopulation() {
+	tours := make([]*graph.Tour, populationNumber)
+
+	for i := 0; i < populationNumber; i++ {
+		tour := solver.PartialRandomGreedy()
+		fmt.Println("Random Greedy: ", tour.Distance)
+
+		tours[i] = tour
+	}
+
+	tour := solver.SolveGA(tours, populationNumber, generations)
 
 	fmt.Println("Distance: ", tour.Distance)
 

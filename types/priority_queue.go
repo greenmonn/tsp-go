@@ -1,4 +1,4 @@
-package solver
+package types
 
 import (
 	"container/heap"
@@ -6,19 +6,19 @@ import (
 	"github.com/greenmonn/tsp-go/graph"
 )
 
-type priorityQueue []*graph.Edge
+type PriorityQueue []*graph.Edge
 
-func (q priorityQueue) Len() int { return len(q) }
+func (q PriorityQueue) Len() int { return len(q) }
 
-func (q priorityQueue) Less(i, j int) bool { return q[i].Distance < q[j].Distance }
+func (q PriorityQueue) Less(i, j int) bool { return q[i].Distance < q[j].Distance }
 
-func (q priorityQueue) Swap(i, j int) { q[i], q[j] = q[j], q[i] }
+func (q PriorityQueue) Swap(i, j int) { q[i], q[j] = q[j], q[i] }
 
-func (q *priorityQueue) Push(x interface{}) {
+func (q *PriorityQueue) Push(x interface{}) {
 	*q = append(*q, x.(*graph.Edge))
 }
 
-func (q *priorityQueue) Pop() interface{} {
+func (q *PriorityQueue) Pop() interface{} {
 	old := *q
 	n := len(old)
 	x := old[n-1]
@@ -27,7 +27,7 @@ func (q *priorityQueue) Pop() interface{} {
 	return x
 }
 
-func initEdges(edges *priorityQueue, nodes []*graph.Node) {
+func InitEdges(edges *PriorityQueue, nodes []*graph.Node) {
 	N := graph.GetNodesCount()
 	D := graph.GetDistanceByIndex
 

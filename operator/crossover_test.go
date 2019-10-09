@@ -15,7 +15,7 @@ var _ = Describe("Crossover", func() {
 	)
 
 	BeforeEach(func() {
-		N = 5
+		N = 8
 		distances := make([][]float64, N)
 		for i := 0; i < N; i++ {
 			distances[i] = make([]float64, i)
@@ -63,13 +63,13 @@ var _ = Describe("Crossover", func() {
 	Describe("GXCrossover", func() {
 		// Parents must have edges map
 		It("crossover two parent tours", func() {
-			p1 := graph.NewRandomTour()
-			p2 := graph.NewRandomTour()
+			p1 := PartialRandomGreedy()
+			p2 := PartialRandomGreedy()
 
 			fmt.Println("Parent 1 Distance: ", p1.Distance)
 			fmt.Println("Parent 2 Distance: ", p2.Distance)
 
-			children := EdgeRecombinationCrossover(p1, p2)
+			children := GXCrossover(p1, p2, 1., 0.25, 0.75)
 
 			for _, c := range children {
 				Expect(len(c.Path)).To(Equal(N))
