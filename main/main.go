@@ -41,7 +41,7 @@ func main() {
 
 	startTime := time.Now()
 
-	LocalSearchFromPartialGreedyTour()
+	MAFromGreedyPopulation() // Change here
 
 	duration := time.Now().Sub(startTime)
 

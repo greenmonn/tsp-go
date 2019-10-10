@@ -9,23 +9,73 @@ This framework implements:
 
 ## How to Run
 
-Implemented on Go version `1.12.5`. For installation of Go, refer to https://golang.org/doc/install.
+Implemented on Go version `1.12.5`.
 
-## Use binary executables
+### Installation of Go
 
-You can just execute with the given binary without installing go.
+For installation of Go, refer to https://golang.org/doc/install, or https://zetawiki.com/wiki/%EC%9A%B0%EB%B6%84%ED%88%AC_go_%EC%B5%9C%EC%8B%A0%EB%B2%84%EC%A0%84_%EC%84%A4%EC%B9%98
 
-in `main/` directory, run the binary ./main using options.
+Clone this source code to the path `$HOME/go/src/github.com/greenmonn/tsp-go/`, or `$GOPATH/src/github.com/greenmonn/tsp-go/` if you set your custom `GOPATH`.
+
+Then run `go get ./...` to get dependencies (The dependencies are just for tests)
+
+### Build
 
 ```bash
-./main -filename=fl1400 -p=10 -f=1000 -o=3 -printLog=false
+..greenmonn/tsp-go $ cd main
+..greenmonn/tsp-go $ go build
+```
+
+### Run
+
+```
+$ ./main -filename=bier127 -p=10 -f=10
+```
+
+### Add Custom Problems from TSPLIB
+
+Currently, it's only compatible with EUC2D, Symmetric TSP instances.
+
+The package structure is shown as below.
+
+```
+.
+├── container
+├── graph
+├── main
+├── operator
+├── problems
+│   ├── a280.tsp
+│   ├── bier127.tsp
+│   ├── burma14.tsp
+│   ├── burma8.tsp
+│   ├── ch130.tsp
+│   ├── ch150.tsp
+│   ├── fl1400.tsp
+│   ├── fl3795.tsp
+│   ├── fnl4461.tsp
+│   └── rl11849.tsp
+├── solver
+└── utils
+```
+
+If you want to add problems, just locate the `tsp` file from TSPLIB to `problems` folder.
+
+### Use Binary Executables
+
+You can just execute with the given binary without installing go, if you're using Linux/amd64 platform.
+
+```bash
+./solver_linux -filename=fl1400 -p=10 -f=100 -o=3 -printLog=false
 ```
 
 ### Options
 
 1. `-filename`
+
     - default: rl11849
     - Reads the file in `problems/` directory. If you want to add new `.tsp` file, just add the file to the directory and give the filename without extension(`.tsp`) as the option
+
 2. `-p`
 
     - default: 10
@@ -46,7 +96,42 @@ in `main/` directory, run the binary ./main using options.
     - if true, the log is printed to stdout.
     - if false, log is saved to the file (log-filename.txt)
 
-## Memetic Algorithm Procedure
+### Change Experiment Settings
+
+The default function is implementation of Memetic Algorithm. Currently, Up to `N < 2000` instances are solved in feasible time (< 20mins), N < 4000 instances are tested (< 1 hour)
+
+You can test diverse settings by changing function in `main.go`.
+
+```go
+func main() {
+	parseArguments()
+
+	rand.Seed(time.Now().UnixNano())
+
+	if !printLog {
+		fpLog, err := os.OpenFile("log-"+filename+".txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			panic(err)
+		}
+		defer fpLog.Close()
+
+		log.SetOutput(fpLog)
+	}
+
+	graph.SetGraphFromFile("problems/" + filename + ".tsp")
+
+	startTime := time.Now()
+
+    // MAFromGreedyPopulation() => Change here to below line
+	LocalSearchFromPartialGreedyTour()
+
+	duration := time.Now().Sub(startTime)
+
+	log.Println("Duration: ", duration)
+}
+```
+
+## Memetic Algorithm
 
 Memetic Algorithm solver is provided in the `solver` package in the Go implementation.
 
@@ -170,7 +255,6 @@ On the other hand, GX, Order, Edge Recombination Crossover are implemented in Go
 2. Switch two edges randomly
 
 The second one was more complicated to implement (I used node’s connection links instead of manipulating path). However, switching edge mutations seems to be efficient because swapping two nodes changes up to 4 edges, and the each 2 pair of edges are neighboring edges - this can cause bias and limit exploration.
-// explanation with picture?
 
 ## Local Search Operators
 
