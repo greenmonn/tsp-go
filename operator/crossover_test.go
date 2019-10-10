@@ -1,7 +1,7 @@
 package operator
 
 import (
-	"fmt"
+	"log"
 	"sort"
 
 	. "github.com/onsi/ginkgo"
@@ -35,8 +35,6 @@ var _ = Describe("Crossover", func() {
 			for _, c := range children {
 				Expect(len(c.Path)).To(Equal(N))
 			}
-
-			fmt.Println("Finish")
 		})
 	})
 
@@ -45,14 +43,14 @@ var _ = Describe("Crossover", func() {
 			p1 := graph.NewRandomTour()
 			p2 := graph.NewRandomTour()
 
-			fmt.Println("Parent 1 Distance: ", p1.Distance)
-			fmt.Println("Parent 2 Distance: ", p2.Distance)
+			log.Println("Parent 1 Distance: ", p1.Distance)
+			log.Println("Parent 2 Distance: ", p2.Distance)
 
 			children := EdgeRecombinationCrossover(p1, p2)
 
 			for _, c := range children {
 				Expect(len(c.Path)).To(Equal(N))
-				fmt.Println("Distance: ", c.Distance)
+				log.Println("Distance: ", c.Distance)
 			}
 
 		})
@@ -68,8 +66,8 @@ var _ = Describe("Crossover", func() {
 			p1 := PartialRandomGreedy()
 			p2 := PartialRandomGreedy()
 
-			fmt.Println("Parent 1 Distance: ", p1.Distance)
-			fmt.Println("Parent 2 Distance: ", p2.Distance)
+			log.Println("Parent 1 Distance: ", p1.Distance)
+			log.Println("Parent 2 Distance: ", p2.Distance)
 
 			children := GXCrossover(p1, p2, 1., 0.25, 0.75)
 
@@ -80,7 +78,7 @@ var _ = Describe("Crossover", func() {
 				sort.Ints(idPath)
 
 				Expect(idPath).To(Equal(makeRange(1, N)))
-				fmt.Println("Distance: ", c.Distance)
+				log.Println("Distance: ", c.Distance)
 			}
 
 		})

@@ -23,3 +23,13 @@
     * 10 Population / 10 Generations =>
         - 20992.697122157802
         - Final Optimization: 20972.668601824516
+
+# Result (fl3795)
+
+## MA
+
+    * 10 Population / 10 Generations =>
+        - 29565.121753298718
+
+2019/10/10 09:06:21 17868 Bytes Wrote
+2019/10/10 09:06:21 Duration: 1h32m15.319237797s

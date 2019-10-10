@@ -2,7 +2,6 @@ package operator
 
 import (
 	"container/heap"
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -12,8 +11,6 @@ import (
 )
 
 func PartialRandomGreedy() (tour *graph.Tour) {
-	fmt.Println("Start Solving Greedy")
-
 	nodes := graph.CopyNodesFromGraph()
 
 	sets, setsCount, connectedEdges := randomConnect(nodes)
@@ -23,11 +20,7 @@ func PartialRandomGreedy() (tour *graph.Tour) {
 
 	container.InitEdges(edges, nodes)
 
-	fmt.Println("1: Make Edges Priority Queue")
-
 	GreedyConnect(edges, nodes, sets, setsCount, connectedEdges)
-
-	fmt.Println("2: Connect possible short edges")
 
 	tour = graph.NewTour()
 	tour.FromNodes(nodes)
@@ -36,13 +29,7 @@ func PartialRandomGreedy() (tour *graph.Tour) {
 	tour.Edges = connectedEdges
 	tour.FlexEdges = make([]*graph.Edge, 0) // Make all edges fixed
 
-	// index := 0
-	// for _, e := range connectedEdges {
-	// 	tour.FlexEdges[index] = e
-	// 	index++
-	// }
-
-	fmt.Println("3: Construct tour from connected nodes")
+	log.Println("Partially Random Greedy Tour: ", tour.Distance)
 
 	return
 
@@ -133,8 +120,6 @@ func randomConnect(nodes []*graph.Node) (sets map[int]*[]*graph.Node, setsCount 
 
 		neighbor := randomChoose(nearestUnvisited, secondNearest)
 		delete(unvisitedNodes, neighbor.ID)
-
-		// fmt.Printf("Randomly connected: (%d, %d)\n", node.ID, neighbor.ID)
 
 		node.Degree++
 		node.Connected = append(node.Connected, neighbor)

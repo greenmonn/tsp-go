@@ -1,7 +1,7 @@
 package solver
 
 import (
-	"fmt"
+	"log"
 	"sort"
 
 	"github.com/greenmonn/tsp-go/graph"
@@ -38,11 +38,11 @@ var _ = Describe("Greedy", func() {
 			sort.Ints(idPath)
 			Expect(idPath).To(Equal(makeRange(1, N)))
 
-			fmt.Println("Distance: ", tour.Distance)
+			log.Println("Distance: ", tour.Distance)
 
 			n := graph.WritePathToFile(tour.Path, filename)
 
-			fmt.Printf("%d Bytes Wrote\n", n)
+			log.Printf("%d Bytes Wrote\n", n)
 		})
 	})
 })

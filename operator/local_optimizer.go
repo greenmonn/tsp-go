@@ -1,11 +1,14 @@
 package operator
 
 import (
-	"fmt"
 	"log"
 	"math"
 
 	"github.com/greenmonn/tsp-go/graph"
+)
+
+const (
+	logCycle = 10
 )
 
 func Optimize(tour *graph.Tour) {
@@ -48,14 +51,14 @@ func LocalSearchOptimize(tour *graph.Tour, iterationLimit int) {
 		found := find2OptBetterMoveFromConnections(tour)
 
 		iteration++
-		if iteration%100 == 0 {
-			fmt.Println("\nIteration count: ", iteration)
+		if iteration%logCycle == 0 {
+			log.Println("Iteration count: ", iteration)
 			tour.FromNodes(tour.Path)
-			fmt.Println("Distance: ", tour.Distance)
+			log.Println("Distance: ", tour.Distance)
 		}
 
 		if !found {
-			fmt.Println("\nFINISH - Iteration count: ", iteration)
+			log.Println("FINISH - Iteration count: ", iteration)
 			tour.FromNodes(tour.Path)
 			return
 		}
@@ -70,14 +73,14 @@ func FastLocalSearchOptimize(tour *graph.Tour) {
 		found := find2OptBetterMoveFromEdges(tour)
 
 		iteration++
-		if iteration%10 == 0 {
-			fmt.Println("\nIteration count: ", iteration)
+		if iteration%logCycle == 0 {
+			log.Println("\nIteration count: ", iteration)
 			tour.FromNodes(tour.Path)
-			fmt.Println("Distance: ", tour.Distance)
+			log.Println("Distance: ", tour.Distance)
 		}
 
 		if !found {
-			fmt.Println("\nFINISH - Iteration count: ", iteration)
+			log.Println("\nFINISH - Iteration count: ", iteration)
 			// make path from connections
 			tour.FromNodes(tour.Path)
 

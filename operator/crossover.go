@@ -230,6 +230,8 @@ func GXCrossover(parent1 *graph.Tour, parent2 *graph.Tour, cRate float64, nRate 
 
 	child.FlexEdges = flexEdges
 
+	log.Println("Flexible Edges: ", len(child.FlexEdges))
+
 	return []*graph.Tour{child}
 }
 

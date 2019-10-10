@@ -38,7 +38,7 @@ func (t *Tour) FromNodes(connectedNodes []*Node) {
 		return
 	}
 
-	// fmt.Println("Constructing path from connected nodes. . .")
+	// log.Println("Constructing path from connected nodes. . .")
 
 	N := GetNodesCount()
 	var prevNode *Node

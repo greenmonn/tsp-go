@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/greenmonn/tsp-go/graph"
@@ -17,12 +18,18 @@ var (
 	optimizationCount int
 
 	filename string
+
+	printLog bool
 )
 
 func main() {
 	parseArguments()
 
 	rand.Seed(time.Now().UnixNano())
+
+	if !printLog {
+		setFileLog()
+	}
 
 	graph.SetGraphFromFile("problems/" + filename + ".tsp")
 
@@ -32,7 +39,7 @@ func main() {
 
 	duration := time.Now().Sub(startTime)
 
-	fmt.Println("Duration: ", duration)
+	log.Println("Duration: ", duration)
 }
 
 func GAFromRandomPopulation() {
@@ -40,17 +47,17 @@ func GAFromRandomPopulation() {
 
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
 
-	fmt.Println("Distance: ", tour.Distance)
+	log.Println("Distance: ", tour.Distance)
 
 	for i := 0; i < optimizationCount; i++ {
 		operator.Optimize(tour)
 	}
 
-	fmt.Println("Distance after Optimization: ", tour.Distance)
+	log.Println("Distance after Optimization: ", tour.Distance)
 
 	n := tour.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func GAFromGreedyPopulation() {
@@ -58,7 +65,6 @@ func GAFromGreedyPopulation() {
 
 	for i := 0; i < populationNumber; i++ {
 		tour := operator.PartialRandomGreedy()
-		fmt.Println("Random Greedy: ", tour.Distance)
 
 		tours[i] = tour
 	}
@@ -67,17 +73,17 @@ func GAFromGreedyPopulation() {
 
 	tour := solver.SolveGA(tours, populationNumber, generations)
 
-	fmt.Println("Distance: ", tour.Distance)
+	log.Println("Distance: ", tour.Distance)
 
 	for i := 0; i < optimizationCount; i++ {
 		operator.Optimize(tour)
 	}
 
-	fmt.Println("Distance after Optimization: ", tour.Distance)
+	log.Println("Distance after Optimization: ", tour.Distance)
 
 	n := tour.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func LocalSearchFromRandomTour() {
@@ -85,7 +91,7 @@ func LocalSearchFromRandomTour() {
 
 	operator.LocalSearchOptimize(tour, -1)
 
-	fmt.Println("Distance: ", tour.Distance)
+	log.Println("Distance: ", tour.Distance)
 
 }
 
@@ -96,13 +102,13 @@ func IterativeOptimization() {
 		operator.Optimize(tour)
 	}
 
-	fmt.Println("Distance: ", tour.Distance)
+	log.Println("Distance: ", tour.Distance)
 }
 
 func GAOptimizeFinalPopulation() {
 	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
 
-	fmt.Println("Best Distance: ", population.BestTour().Distance)
+	log.Println("Best Distance: ", population.BestTour().Distance)
 
 	for _, tour := range population.Tours {
 		operator.Optimize(tour)
@@ -110,11 +116,11 @@ func GAOptimizeFinalPopulation() {
 
 	best := population.BestTour()
 
-	fmt.Println("Best Distance after Optimization: ", best.Distance)
+	log.Println("Best Distance after Optimization: ", best.Distance)
 
 	n := best.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func MAWithGreedyPopulation() {
@@ -124,43 +130,42 @@ func MAWithGreedyPopulation() {
 
 	for i := 0; i < populationNumber; i++ {
 		tour := operator.PartialRandomGreedy()
-		fmt.Println("Random Greedy: ", tour.Distance)
 
 		tours[i] = tour
 	}
 
 	optTour := solver.SolveMA(tours, populationNumber, generations, optimizeGap)
 
-	fmt.Println("Final Best Distance: ", optTour.Distance)
+	log.Println("Final Best Distance: ", optTour.Distance)
 
 	n := optTour.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func MAWithRandomPopulation() {
 
 	optTour := solver.SolveMA([]*graph.Tour{}, populationNumber, generations, 10)
 
-	fmt.Println("Final Best Distance: ", optTour.Distance)
+	log.Println("Final Best Distance: ", optTour.Distance)
 
 	n := optTour.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func greedy() {
 	tour := solver.SolveGreedy()
 
-	fmt.Println("Distance: ", tour.Distance)
+	log.Println("Distance: ", tour.Distance)
 
 	operator.LocalSearchOptimize(tour, -1)
 
-	fmt.Println("Distance after Optimization: ", tour.Distance)
+	log.Println("Distance after Optimization: ", tour.Distance)
 
 	n := tour.WritePathToFile(filename)
 
-	fmt.Printf("%d Bytes Wrote\n", n)
+	log.Printf("%d Bytes Wrote\n", n)
 }
 
 func parseArguments() {
@@ -170,9 +175,22 @@ func parseArguments() {
 	generationsPtr := flag.Int("f", 100, "generations for fitness evaluations")
 	optimizationCountPtr := flag.Int("o", 2, "count of iterative optimizations for final solution")
 
+	printLogPtr := flag.Bool("v", true, "print log to stdout")
+
 	flag.Parse()
 	filename = *filenamePtr
 	populationNumber = *populationNumberPtr
 	generations = *generationsPtr
 	optimizationCount = *optimizationCountPtr
+	printLog = *printLogPtr
+}
+
+func setFileLog() {
+	fpLog, err := os.OpenFile("log-"+filename+".txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer fpLog.Close()
+
+	log.SetOutput(fpLog)
 }
