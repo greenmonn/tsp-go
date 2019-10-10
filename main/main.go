@@ -35,7 +35,7 @@ func main() {
 
 	startTime := time.Now()
 
-	MAWithGreedyPopulation()
+	LocalSearchFromPartialGreedyTour()
 
 	duration := time.Now().Sub(startTime)
 
@@ -43,8 +43,7 @@ func main() {
 }
 
 func GAFromRandomPopulation() {
-	graph.SetNearestNeighbors(5)
-
+	// Best Performance: Edge Recombination Crossover + Edge Exchange Mutation
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
 
 	log.Println("Distance: ", tour.Distance)
@@ -62,14 +61,13 @@ func GAFromRandomPopulation() {
 
 func GAFromGreedyPopulation() {
 	tours := make([]*graph.Tour, populationNumber)
+	graph.SetNearestNeighbors(5)
 
 	for i := 0; i < populationNumber; i++ {
 		tour := operator.PartialRandomGreedy()
 
 		tours[i] = tour
 	}
-
-	graph.SetNearestNeighbors(5)
 
 	tour := solver.SolveGA(tours, populationNumber, generations)
 
@@ -86,13 +84,27 @@ func GAFromGreedyPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
-func LocalSearchFromRandomTour() {
-	tour := graph.NewRandomTour()
+func LocalSearchFromPartialGreedyTour() {
+	tours := make([]*graph.Tour, populationNumber)
+	graph.SetNearestNeighbors(5)
 
-	operator.LocalSearchOptimize(tour, -1)
+	for i := 0; i < populationNumber; i++ {
+		tour := operator.PartialRandomGreedy()
 
-	log.Println("Distance: ", tour.Distance)
+		tours[i] = tour
+	}
 
+	for _, tour := range tours {
+		for i := 0; i < optimizationCount; i++ {
+			operator.LocalSearchOptimize(tour, -1)
+		}
+	}
+
+	population := solver.NewPopulation(populationNumber, tours)
+
+	best := population.BestTour()
+
+	log.Println("Distance: ", best.Distance)
 }
 
 func IterativeOptimization() {

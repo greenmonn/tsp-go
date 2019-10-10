@@ -10,7 +10,7 @@ import (
 
 const (
 	tournamentSize = 6
-	mutationRate   = 0.01
+	mutationRate   = 0.03
 	elitism        = true
 )
 
@@ -38,7 +38,6 @@ func GAOptimize(initialTours []*graph.Tour, populationNumber int, generations in
 
 	return population
 }
-
 
 func EvolvePopulation(p *Population) *Population {
 	tours := make([]*graph.Tour, p.N)
@@ -114,11 +113,13 @@ func selectTournament(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) 
 }
 
 func crossover(parent1 *graph.Tour, parent2 *graph.Tour) (children []*graph.Tour) {
-	return operator.GXCrossover(parent1, parent2, 1.0, 0, 0.75)
+	// return operator.GXCrossover(parent1, parent2, 1.0, 0, 0.75)
+	return operator.EdgeRecombinationCrossover(parent1, parent2)
 }
 
 func mutate(t *graph.Tour) {
-	operator.EdgeExchangeMutateForGX(t, mutationRate)
+	//operator.EdgeExchangeMutateForGX(t, mutationRate)
+	operator.EdgeExchangeMutate(t, mutationRate)
 }
 
 func makeRange(min, max int) []int {
