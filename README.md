@@ -98,7 +98,19 @@ You can just execute with the given binary without installing go, if you're usin
 
 ### Change Experiment Settings
 
-The default function is implementation of Memetic Algorithm. Currently, Up to `N < 2000` instances are solved in feasible time (< 20mins), N < 4000 instances are tested (< 1 hour)
+The default function is implementation of Memetic Algorithm. Currently, Up to `N < 2000` instances are solved in feasible time (< 20mins), `N < 4000` instances are tested (< 1 hour) on 10 population, 10 fitness evaluations.
+
+#### MA w/ 2-Optimization (fl1400.tsp)
+
+    * Best known: 20127
+    * 10 Population / 10 Generations =>
+        - 20972.668601824516 (4% error)
+
+#### MA w/ 2-Optimization (fl3795.tsp)
+
+    * Best known: 28723
+    * 10 Population / 10 Generations =>
+        - 29565.121753298718 (2.9% error)
 
 You can test diverse settings by changing function in `main.go`.
 
@@ -199,7 +211,7 @@ First, random population is used for both GA and local optimization. random tour
 
 ### Partially Greedy Random Tour
 
-Hence, I implemented Partially Greedy Random Tour, which is suggested in the paper[1]. The paper also analyze TSP fitness landscape, which indicates the local optimums share about 75% among the edges in general cases. Hence, suboptimal solutions from greedy heuristics can be used as seeds.
+Hence, I implemented Partially Greedy Random Tour, which is suggested in the [paper](<(https://wpmedia.wolfram.com/uploads/sites/13/2018/02/13-4-1.pdf)>). The paper also analyze TSP fitness landscape, which indicates the local optimums share about 75% among the edges in general cases. Hence, suboptimal solutions from greedy heuristics can be used as seeds.
 However, instead of simply mutating the greedy tour, 1/4 of the edges are connected first in random manners, and the remaining edges are connected greedily. In detail,
 
 -   Random connect: actually, it is not totally random but uses preliminarily calculated nearest neighbors information. The random unvisited node is selected and connected to the nearest neighbor(p=0.66) or the second nearest neighbor(p=0.33).
@@ -279,7 +291,7 @@ func Optimize(tour *graph.Tour) {
 }
 ```
 
-Surprisingly, this showed similar performance of original local search. \* Example:
+Surprisingly, this showed similar performance of original local search.
 
 2. Local Search (Original): I implemented general local search using connections in nodes. `Node` type is similar to doubly-linked lists because it has pointers to the 2 connected nodes. It guarantees to exactly find 2-opt local optimum, but costly for the instances >= 10000.
 
@@ -306,7 +318,7 @@ GX crossover passes list of edges and flexible edges, and the implementation of 
 
 ## Implementation Issue
 
-I switched to the Go implementation because of the computational efficiency. For very large instances N >= 10000, Incorporating Local Search with GA took infeasible amount of time.
+I switched to the Go implementation because of the computational efficiency. For very large instances `N >= 10000`, Incorporating Local Search with GA took infeasible amount of time.
 
 I tried limiting iterations of local search, (not waiting until no neighbors are found) but there was a problem:
 
