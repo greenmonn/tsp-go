@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -41,7 +42,13 @@ func main() {
 
 	startTime := time.Now()
 
-	MAFromGreedyPopulation() // Change here
+	tour := MAFromGreedyPopulation() // Change here
+
+	fmt.Println("Distance: ", tour.Distance)
+
+	n := tour.WritePathToFile(filename)
+
+	log.Printf("%d Bytes Wrote\n", n)
 
 	duration := time.Now().Sub(startTime)
 
@@ -50,7 +57,7 @@ func main() {
 
 // Random Population Based
 
-func GAFromRandomPopulation() {
+func GAFromRandomPopulation() *graph.Tour {
 	/* recommended: -p=50, -f=100000 (for fl1400.tsp)
 	Best Performance: Edge Recombination Crossover + Edge Exchange Mutation */
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
@@ -63,24 +70,20 @@ func GAFromRandomPopulation() {
 
 	log.Println("Distance after Optimization: ", tour.Distance)
 
-	n := tour.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return tour
 }
 
-func LocalSearchFromRandomTour() {
+func LocalSearchFromRandomTour() *graph.Tour {
 	tour := graph.NewRandomTour()
 
 	operator.LocalSearchOptimize(tour, -1)
 
 	log.Println("Distance: ", tour.Distance)
 
-	n := tour.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return tour
 }
 
-func GAOptimizeFinalPopulation() {
+func GAOptimizeFinalPopulation() *graph.Tour {
 	/* recommended: -p=50, -f=100000 (for fl1400.tsp) */
 	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
 
@@ -94,14 +97,12 @@ func GAOptimizeFinalPopulation() {
 
 	log.Println("Best Distance after Optimization: ", best.Distance)
 
-	n := best.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return best
 }
 
 // Partially Greedy Population Based
 
-func GAFromGreedyPopulation() {
+func GAFromGreedyPopulation() *graph.Tour {
 	/* recommended: -p=10, -f=10000 (for fl1400.tsp) */
 	tours := make([]*graph.Tour, populationNumber)
 	graph.SetNearestNeighbors(5)
@@ -122,12 +123,10 @@ func GAFromGreedyPopulation() {
 
 	log.Println("Distance after Optimization: ", tour.Distance)
 
-	n := tour.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return tour
 }
 
-func MAFromGreedyPopulation() {
+func MAFromGreedyPopulation() *graph.Tour {
 	/* recommended: -p=10, -f=10 */
 
 	optimizeGap := 1
@@ -144,12 +143,10 @@ func MAFromGreedyPopulation() {
 
 	log.Println("Final Best Distance: ", optTour.Distance)
 
-	n := optTour.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return optTour
 }
 
-func LocalSearchFromPartialGreedyTour() {
+func LocalSearchFromPartialGreedyTour() *graph.Tour {
 	/* recommended: -p=10 */
 
 	tours := make([]*graph.Tour, populationNumber)
@@ -175,15 +172,13 @@ func LocalSearchFromPartialGreedyTour() {
 	operator.LocalSearchOptimize(best, -1)
 	log.Println("Distance after final optimization: ", best.Distance)
 
-	n := best.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return best
 
 }
 
 // Deterministic Optimization
 
-func IterativeOptimization() {
+func IterativeOptimization() *graph.Tour {
 	tour := graph.NewRandomTour()
 
 	for i := 0; i < optimizationCount; i++ {
@@ -191,9 +186,11 @@ func IterativeOptimization() {
 	}
 
 	log.Println("Distance: ", tour.Distance)
+
+	return tour
 }
 
-func Greedy() {
+func Greedy() *graph.Tour {
 	tour := solver.SolveGreedy()
 
 	log.Println("Distance: ", tour.Distance)
@@ -202,9 +199,7 @@ func Greedy() {
 
 	log.Println("Distance after Optimization: ", tour.Distance)
 
-	n := tour.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	return tour
 }
 
 func parseArguments() {

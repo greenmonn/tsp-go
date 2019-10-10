@@ -96,6 +96,14 @@ You can just execute with the given binary without installing go, if you're usin
     - if true, the log is printed to stdout.
     - if false, log is saved to the file (log-filename.txt)
 
+### Output
+
+For the result, the path is saved as csv file, for example, `rl11849.csv`.
+
+The distance of the path is printed to the console.
+
+By setting `-v=false`, log is printed to a file, instead of stdout.
+
 ### Change Experiment Settings
 
 The default function is implementation of Memetic Algorithm. Currently, Up to `N < 2000` instances are solved in feasible time (< 20mins), `N < 4000` instances are tested (< 1 hour) on 10 population, 10 fitness evaluations.
