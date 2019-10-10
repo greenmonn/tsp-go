@@ -1,8 +1,9 @@
 package utils
 
 import (
+	"log"
+	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -36,7 +37,10 @@ func ParseLine(line string) (id int, xPos float64, yPos float64) {
 }
 
 func GetSourceRootPath() string {
-	_, sourcePath, _, _ := runtime.Caller(0)
+	sourcePath, err := os.Executable()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	sourcePath = path.Join(path.Dir(sourcePath), "..")
 
 	return sourcePath
