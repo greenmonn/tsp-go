@@ -26,7 +26,7 @@
 
 # Result (fl3795)
 
-## MA
+## MA w/ 2-Optimization
 
     * 10 Population / 10 Generations =>
         - 29565.121753298718

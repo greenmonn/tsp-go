@@ -10,7 +10,7 @@ import (
 
 const (
 	tournamentSize = 6
-	mutationRate   = 0.03
+	mutationRate   = 0.02
 	elitism        = true
 )
 

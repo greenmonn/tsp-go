@@ -7,6 +7,45 @@ This framework implements:
 -   Memetic algorithm with GX crossover ([Paper](https://wpmedia.wolfram.com/uploads/sites/13/2018/02/13-4-1.pdf))
 -   Greedy heuristics
 
+## How to Run
+
+Implemented on Go version `1.12.5`. For installation of Go, refer to https://golang.org/doc/install.
+
+## Use binary executables
+
+You can just execute with the given binary without installing go.
+
+in `main/` directory, run the binary ./main using options.
+
+```bash
+./main -filename=fl1400 -p=10 -f=1000 -o=3 -printLog=false
+```
+
+### Options
+
+1. `-filename`
+    - default: rl11849
+    - Reads the file in `problems/` directory. If you want to add new `.tsp` file, just add the file to the directory and give the filename without extension(`.tsp`) as the option
+2. `-p`
+
+    - default: 10
+    - population number
+
+3. `-f`
+
+    - default: 100
+    - fitness evaluations, same as generations in GA
+
+4. `-o`
+
+    - default: 2
+    - optimization count, only needed if using iterative local search
+
+5. `-v`
+    - default: true
+    - if true, the log is printed to stdout.
+    - if false, log is saved to the file (log-filename.txt)
+
 ## Memetic Algorithm Procedure
 
 Memetic Algorithm solver is provided in the `solver` package in the Go implementation.
@@ -69,15 +108,18 @@ First, random population is used for both GA and local optimization. random tour
 -   for GA: with large N, each random individual has relatively very little portion to be preserved. I tried with several crossover operators such as Order Crossover and Edge Recombination Crossover, GA needed too many generations and doesn’t converge to the near-optimum solution. It is because the random population didn’t have many ‘good’ edges in the beginning, and the good edges can only be introduced by mutation and implicit mutation during the crossover(introducing foreign edges). So it is challenging to make the large TSP instances to build the near-optimum tour solely with GA operators.
 
     -   fl1400.tsp: (10 population, 100000 generations, 24min38s) 654753.9982867754
-    -
 
--   for Local Search: local search from a random individual, in this framework, 2-opt(Pairwise Edge Exchange) could approach to the local optimum in more feasible time. For N=1400 instance, the margin of error was < 10% of the known best solution. However, the global optimum is not guaranteed, and is depends on the ‘luck’ of randomly getting feasible initial tour.
-    -   fl1400.tsp:
+*   for Local Search: local search from a random individual, in this framework, 2-opt(Pairwise Edge Exchange) could approach to the local optimum in more feasible time. For N=1400 instance, the margin of error was < 10% of the known best solution. However, the global optimum is not guaranteed, and is depends on the ‘luck’ of randomly getting feasible initial tour.
+    -   fl1400.tsp: (5814 generations, 56s) 22235.961790
+
+### Partially Greedy Random Tour
 
 Hence, I implemented Partially Greedy Random Tour, which is suggested in the paper[1]. The paper also analyze TSP fitness landscape, which indicates the local optimums share about 75% among the edges in general cases. Hence, suboptimal solutions from greedy heuristics can be used as seeds.
 However, instead of simply mutating the greedy tour, 1/4 of the edges are connected first in random manners, and the remaining edges are connected greedily. In detail,
-_ Random connect: actually, it is not totally random but uses preliminarily calculated nearest neighbors information. The random unvisited node is selected and connected to the nearest neighbor(p=0.66) or the second nearest neighbor(p=0.33).
-_ Greedy connect: for this phase (determining 3/4 of the edges), the remaining edges are stored in a priority queue and check the each edge can be added to tour in increasing distance. This greedy heuristic is known as slightly better than the nearest neighbor approach.
+
+-   Random connect: actually, it is not totally random but uses preliminarily calculated nearest neighbors information. The random unvisited node is selected and connected to the nearest neighbor(p=0.66) or the second nearest neighbor(p=0.33).
+
+-   Greedy connect: for this phase (determining 3/4 of the edges), the remaining edges are stored in a priority queue and check the each edge can be added to tour in increasing distance. This greedy heuristic is known as slightly better than the nearest neighbor approach.
 
 ### Evaluation
 
@@ -173,42 +215,15 @@ type Node struct {
    By using the list of edges in the given tour, the cost of local search decrease because the number of considerable edges are reduced.
 
 GX crossover passes list of edges and flexible edges, and the implementation of edge-based local search considers only the flexible edges to be swapped.
-_ For example, (rl11849)
-_ Number of flexible edges for the first local search: 2000-3000 \* 2nd local search:
 
-## How to Run
-
-Implemented on Go version `1.12.5`. If you want to build this by yourself, refer to https://golang.org/doc/install.
-
-You can just execute with the given binary without installing go.
-
-in `main/` directory, run the binary ./main using options.
-
-```bash
-./main -filename=fl1400 -p=10 -f=1000 -o=3 -printLog=false
-```
-
-### Options
-
-1. `-filename`
-    - default: rl11849
-    - Reads the file in `problems/` directory. If you want to add new `.tsp` file, just add the file to the directory and give the filename without extension(`.tsp`) as the option
-2. `-p`
-    - population number
-3. `-f`
-
-    - fitness evaluations, same as generations in GA
-
-4. `-o`
-
-    - optimization count, only needed if using iterative local search
-
-5. `-printLog`
-    - if True, the log is printed to stdout.
-    - if False, log is saved to the file (log-filename.txt)
+-   For example, (rl11849)
+    -   Number of flexible edges for the first local search: 2000-3000
+    -   Second local search:
 
 ## Implementation Issue
 
 I switched to the Go implementation because of the computational efficiency. For very large instances N >= 10000, Incorporating Local Search with GA took infeasible amount of time.
 
-I tried limiting iterations of local search, (not waiting until no neighbors are found) but there was a problem: \* Some of the tours reach to the local optimum in shorter iterations-others are not. But it is possible that some tours can have better local optimum although it takes more iterations to approach there. Simply limiting iterations cause unexpected ‘race’ between tours, and the winning tour in the earlier generations tends to remain as best until the end. Determining local optimum early is not intended behavior, so I tried to find another way to reduce computational cost of local search.
+I tried limiting iterations of local search, (not waiting until no neighbors are found) but there was a problem:
+
+-   Some of the tours reach to the local optimum in shorter iterations-others are not. But it is possible that some tours can have better local optimum although it takes more iterations to approach there. Simply limiting iterations cause unexpected ‘race’ between tours, and the winning tour in the earlier generations tends to remain as best until the end. Determining local optimum early is not intended behavior, so I tried to find another way to reduce computational cost of local search.

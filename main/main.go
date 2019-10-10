@@ -28,22 +28,31 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	if !printLog {
-		setFileLog()
+		fpLog, err := os.OpenFile("log-"+filename+".txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			panic(err)
+		}
+		defer fpLog.Close()
+
+		log.SetOutput(fpLog)
 	}
 
 	graph.SetGraphFromFile("problems/" + filename + ".tsp")
 
 	startTime := time.Now()
 
-	LocalSearchFromPartialGreedyTour()
+	MAFromGreedyPopulation()
 
 	duration := time.Now().Sub(startTime)
 
 	log.Println("Duration: ", duration)
 }
 
+// Random Population Based
+
 func GAFromRandomPopulation() {
-	// Best Performance: Edge Recombination Crossover + Edge Exchange Mutation
+	/* recommended: -p=50, -f=100000 (for fl1400.tsp)
+	Best Performance: Edge Recombination Crossover + Edge Exchange Mutation */
 	tour := solver.SolveGA([]*graph.Tour{}, populationNumber, generations)
 
 	log.Println("Distance: ", tour.Distance)
@@ -59,7 +68,41 @@ func GAFromRandomPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
+func LocalSearchFromRandomTour() {
+	tour := graph.NewRandomTour()
+
+	operator.LocalSearchOptimize(tour, -1)
+
+	log.Println("Distance: ", tour.Distance)
+
+	n := tour.WritePathToFile(filename)
+
+	log.Printf("%d Bytes Wrote\n", n)
+}
+
+func GAOptimizeFinalPopulation() {
+	/* recommended: -p=50, -f=100000 (for fl1400.tsp) */
+	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
+
+	log.Println("Best Distance: ", population.BestTour().Distance)
+
+	for _, tour := range population.Tours {
+		operator.Optimize(tour)
+	}
+
+	best := population.BestTour()
+
+	log.Println("Best Distance after Optimization: ", best.Distance)
+
+	n := best.WritePathToFile(filename)
+
+	log.Printf("%d Bytes Wrote\n", n)
+}
+
+// Partially Greedy Population Based
+
 func GAFromGreedyPopulation() {
+	/* recommended: -p=10, -f=10000 (for fl1400.tsp) */
 	tours := make([]*graph.Tour, populationNumber)
 	graph.SetNearestNeighbors(5)
 
@@ -84,7 +127,9 @@ func GAFromGreedyPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
-func MAWithGreedyPopulation() {
+func MAFromGreedyPopulation() {
+	/* recommended: -p=10, -f=10 */
+
 	optimizeGap := 1
 
 	tours := make([]*graph.Tour, populationNumber)
@@ -104,17 +149,9 @@ func MAWithGreedyPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
-func IterativeOptimization() {
-	tour := graph.NewRandomTour()
-
-	for i := 0; i < optimizationCount; i++ {
-		operator.Optimize(tour)
-	}
-
-	log.Println("Distance: ", tour.Distance)
-}
-
 func LocalSearchFromPartialGreedyTour() {
+	/* recommended: -p=10 */
+
 	tours := make([]*graph.Tour, populationNumber)
 	graph.SetNearestNeighbors(5)
 
@@ -133,33 +170,30 @@ func LocalSearchFromPartialGreedyTour() {
 	population := solver.NewPopulation(populationNumber, tours)
 
 	best := population.BestTour()
+	log.Println("Distance: ", best.Distance)
+
+	operator.LocalSearchOptimize(best, -1)
+	log.Println("Distance after final optimization: ", best.Distance)
 
 	n := best.WritePathToFile(filename)
 
 	log.Printf("%d Bytes Wrote\n", n)
 
-	log.Println("Distance: ", best.Distance)
 }
 
-func GAOptimizeFinalPopulation() {
-	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
+// Deterministic Optimization
 
-	log.Println("Best Distance: ", population.BestTour().Distance)
+func IterativeOptimization() {
+	tour := graph.NewRandomTour()
 
-	for _, tour := range population.Tours {
+	for i := 0; i < optimizationCount; i++ {
 		operator.Optimize(tour)
 	}
 
-	best := population.BestTour()
-
-	log.Println("Best Distance after Optimization: ", best.Distance)
-
-	n := best.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
+	log.Println("Distance: ", tour.Distance)
 }
 
-func greedy() {
+func Greedy() {
 	tour := solver.SolveGreedy()
 
 	log.Println("Distance: ", tour.Distance)
@@ -188,14 +222,4 @@ func parseArguments() {
 	generations = *generationsPtr
 	optimizationCount = *optimizationCountPtr
 	printLog = *printLogPtr
-}
-
-func setFileLog() {
-	fpLog, err := os.OpenFile("log-"+filename+".txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
-	defer fpLog.Close()
-
-	log.SetOutput(fpLog)
 }
