@@ -84,57 +84,6 @@ func GAFromGreedyPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
-func LocalSearchFromPartialGreedyTour() {
-	tours := make([]*graph.Tour, populationNumber)
-	graph.SetNearestNeighbors(5)
-
-	for i := 0; i < populationNumber; i++ {
-		tour := operator.PartialRandomGreedy()
-
-		tours[i] = tour
-	}
-
-	for _, tour := range tours {
-		for i := 0; i < optimizationCount; i++ {
-			operator.LocalSearchOptimize(tour, -1)
-		}
-	}
-
-	population := solver.NewPopulation(populationNumber, tours)
-
-	best := population.BestTour()
-
-	log.Println("Distance: ", best.Distance)
-}
-
-func IterativeOptimization() {
-	tour := graph.NewRandomTour()
-
-	for i := 0; i < optimizationCount; i++ {
-		operator.Optimize(tour)
-	}
-
-	log.Println("Distance: ", tour.Distance)
-}
-
-func GAOptimizeFinalPopulation() {
-	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
-
-	log.Println("Best Distance: ", population.BestTour().Distance)
-
-	for _, tour := range population.Tours {
-		operator.Optimize(tour)
-	}
-
-	best := population.BestTour()
-
-	log.Println("Best Distance after Optimization: ", best.Distance)
-
-	n := best.WritePathToFile(filename)
-
-	log.Printf("%d Bytes Wrote\n", n)
-}
-
 func MAWithGreedyPopulation() {
 	optimizeGap := 1
 
@@ -155,13 +104,57 @@ func MAWithGreedyPopulation() {
 	log.Printf("%d Bytes Wrote\n", n)
 }
 
-func MAWithRandomPopulation() {
+func IterativeOptimization() {
+	tour := graph.NewRandomTour()
 
-	optTour := solver.SolveMA([]*graph.Tour{}, populationNumber, generations, 10)
+	for i := 0; i < optimizationCount; i++ {
+		operator.Optimize(tour)
+	}
 
-	log.Println("Final Best Distance: ", optTour.Distance)
+	log.Println("Distance: ", tour.Distance)
+}
 
-	n := optTour.WritePathToFile(filename)
+func LocalSearchFromPartialGreedyTour() {
+	tours := make([]*graph.Tour, populationNumber)
+	graph.SetNearestNeighbors(5)
+
+	for i := 0; i < populationNumber; i++ {
+		tour := operator.PartialRandomGreedy()
+
+		tours[i] = tour
+	}
+
+	for _, tour := range tours {
+		for i := 0; i < optimizationCount; i++ {
+			operator.Optimize(tour)
+		}
+	}
+
+	population := solver.NewPopulation(populationNumber, tours)
+
+	best := population.BestTour()
+
+	n := best.WritePathToFile(filename)
+
+	log.Printf("%d Bytes Wrote\n", n)
+
+	log.Println("Distance: ", best.Distance)
+}
+
+func GAOptimizeFinalPopulation() {
+	population := solver.GAOptimize([]*graph.Tour{}, populationNumber, generations)
+
+	log.Println("Best Distance: ", population.BestTour().Distance)
+
+	for _, tour := range population.Tours {
+		operator.Optimize(tour)
+	}
+
+	best := population.BestTour()
+
+	log.Println("Best Distance after Optimization: ", best.Distance)
+
+	n := best.WritePathToFile(filename)
 
 	log.Printf("%d Bytes Wrote\n", n)
 }

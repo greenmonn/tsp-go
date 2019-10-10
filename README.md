@@ -180,7 +180,7 @@ _ Number of flexible edges for the first local search: 2000-3000 \* 2nd local se
 
 Implemented on Go version `1.12.5`. If you want to build this by yourself, refer to https://golang.org/doc/install.
 
-But don't worry. you can just execute with the given binary
+You can just execute with the given binary without installing go.
 
 in `main/` directory, run the binary ./main using options.
 
@@ -188,7 +188,7 @@ in `main/` directory, run the binary ./main using options.
 ./main -filename=fl1400 -p=10 -f=1000 -o=3 -printLog=false
 ```
 
-### Arguments
+### Options
 
 1. `-filename`
     - default: rl11849

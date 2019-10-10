@@ -78,6 +78,45 @@ func EvolvePopulation(p *Population) *Population {
 	return NewPopulation(p.N, tours)
 }
 
+func EvolvePopulationMA(p *Population) *Population {
+	tours := make([]*graph.Tour, p.N)
+
+	offset := 0
+
+	elite := p.BestTour()
+
+	log.Println("Current Best Distance: ", elite.Distance)
+
+	if elitism {
+		tours[offset] = elite
+		offset++
+	}
+
+	var (
+		parent1, parent2 *graph.Tour
+		children         []*graph.Tour
+	)
+
+	for offset < p.N {
+		parent1, parent2 = selectParents(p)
+
+		children = operator.GXCrossover(parent1, parent2, 1.0, 0, 0.75)
+
+		for _, child := range children {
+			operator.EdgeExchangeMutateForGX(child, mutationRate)
+
+			tours[offset] = child
+			offset++
+
+			if offset == p.N {
+				return NewPopulation(p.N, tours)
+			}
+		}
+	}
+
+	return NewPopulation(p.N, tours)
+}
+
 func selectParents(p *Population) (parent1 *graph.Tour, parent2 *graph.Tour) {
 	return selectTournament(p)
 }

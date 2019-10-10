@@ -22,7 +22,7 @@ func SolveMA(initialTours []*graph.Tour, populationNumber int, generations int, 
 	for i := 0; i < generations; i++ {
 		log.Printf("\n%dth Generation\n", i+1)
 
-		population = EvolvePopulation(population)
+		population = EvolvePopulationMA(population)
 
 		// Optimize whole population: individuals would be 'near' local optimum
 		if i%optimizeGap != 0 {
