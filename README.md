@@ -29,7 +29,7 @@ Then run `go get ./...` to get dependencies (The dependencies are just for tests
 ### Run
 
 ```
-$ ./main -filename=bier127 -p=10 -f=10
+$ ./main -filename=bier127 -p=10 -f=10 -v=false
 ```
 
 ### Add Custom Problems from TSPLIB
@@ -66,7 +66,7 @@ If you want to add problems, just locate the `tsp` file from TSPLIB to `problems
 You can just execute with the given binary without installing go, if you're using Linux/amd64 platform.
 
 ```bash
-./solver_linux -filename=fl1400 -p=10 -f=100 -o=3 -printLog=false
+./solver_linux -filename=fl1400 -p=10 -f=100 -o=3 -v=false
 ```
 
 ### Options
@@ -91,7 +91,7 @@ You can just execute with the given binary without installing go, if you're usin
     - default: 2
     - optimization count, only needed if using iterative local search
 
-5. `-v`
+5. `-v` (verbosity)
     - default: true
     - if true, the log is printed to stdout.
     - if false, log is saved to the file (log-filename.txt)
