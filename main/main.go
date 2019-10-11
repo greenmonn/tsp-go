@@ -42,7 +42,7 @@ func main() {
 
 	startTime := time.Now()
 
-	tour := MAFromGreedyPopulation() // Change here
+	tour := LocalSearchFromPartialGreedyTour() // Change here
 
 	fmt.Println("Distance: ", tour.Distance)
 
@@ -164,13 +164,17 @@ func LocalSearchFromPartialGreedyTour() *graph.Tour {
 		}
 	}
 
+	for _, tour := range tours {
+		operator.LocalSearchOptimize(tour, -1)
+	}
+
 	population := solver.NewPopulation(populationNumber, tours)
 
 	best := population.BestTour()
 	log.Println("Distance: ", best.Distance)
 
-	operator.LocalSearchOptimize(best, -1)
-	log.Println("Distance after final optimization: ", best.Distance)
+	// operator.LocalSearchOptimize(best, -1)
+	// log.Println("Distance after final optimization: ", best.Distance)
 
 	return best
 
